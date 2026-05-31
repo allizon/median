@@ -63,8 +63,8 @@ These are explicitly out of scope for v1:
 1. As a user, I can search the shared catalog by title, optionally filtered by media type.
 2. As a user, I can add a new media item (movie, TV show, or book) to the catalog if it doesn't exist.
 3. As a user, I can edit the metadata (title, year, creator) of any catalog item.
-4. As a user adding a TV show, I can define seasons (number and optional title) for that show.
-5. As a user, I can add seasons to a TV show incrementally as I log them.
+4. As a user adding a TV show, I can optionally define seasons (number and optional title) for that show. Season tracking is never required — a TV show can be logged at the show level only.
+5. As a user, I can add seasons to a TV show incrementally as I log them. Season-level tracking remains optional at every step.
 6. As any visitor (including logged-out), I can view a media item's page and see its community average rating.
 
 ### Diary (Logging)
@@ -73,7 +73,7 @@ These are explicitly out of scope for v1:
 2. As a user logging an item, I can set a status: `in-progress`, `paused`, `abandoned`, or `finished`.
 3. As a user, I can update the status of a diary entry as my consumption progresses.
 4. As a user, I can rate a finished item on a 1–5 half-star scale (stored as integer 1–10).
-5. As a user watching a TV show, I can log a show-level diary entry (overall status/rating) and optionally log individual seasons as separate sub-entries.
+5. As a user watching a TV show, I can log a show-level diary entry (overall status/rating) and optionally log individual seasons as separate sub-entries. Season-level logging is always optional — users who do not want that granularity never need to use it.
 6. As a user, season diary entries require an existing show-level diary entry — I must log the show before logging a season.
 7. As a user, I can write private notes on a diary entry. Notes are never visible to anyone else.
 8. As a user, I can record a date when I finished something.
@@ -282,7 +282,7 @@ No OAuth in v1. No email sending in v1 — password recovery requires a manual d
 
 **Edit item:** Any logged-in user can edit a media item's metadata (title, year, creator). Records `updated_by` and `updated_at` on save. No approval flow in v1.
 
-**TV Seasons:** When adding or editing a `tv_show`, the user can add seasons (number + optional title). Seasons can be added incrementally.
+**TV Seasons:** When adding or editing a `tv_show`, the user can optionally add seasons (number + optional title). Seasons can be added incrementally. Season tracking is always optional — a TV show with no seasons defined is fully valid and a show-level DiaryEntry is sufficient for users who do not want per-season granularity.
 
 **Deduplication:** No automated dedup in v1. Rely on search-before-add UX. Known rough edge — addressed in Phase 3 with external catalog enrichment.
 

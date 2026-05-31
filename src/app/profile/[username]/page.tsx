@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { FeaturedListsEditor } from "./FeaturedListsEditor";
+import { AddMediaButton } from "./AddMediaButton";
 
 type ViewerRole = "owner" | "friend" | "stranger" | "logged-out";
 
@@ -138,7 +139,6 @@ export default async function ProfilePage({
       ? await prisma.list.findMany({
           where: {
             ownerId: profileUser.id,
-            visibility: { in: ["public", "friends"] },
           },
           orderBy: { createdAt: "asc" },
           select: {
@@ -180,12 +180,15 @@ export default async function ProfilePage({
 
         <div className="shrink-0">
           {role === "owner" && (
-            <Link
-              href="/settings"
-              className="text-sm text-primary underline-offset-4 hover:underline"
-            >
-              Settings
-            </Link>
+            <div className="flex items-center gap-3">
+              <AddMediaButton />
+              <Link
+                href="/settings"
+                className="text-sm text-primary underline-offset-4 hover:underline"
+              >
+                Settings
+              </Link>
+            </div>
           )}
           {role !== "owner" && viewerId && (
             <FriendButton

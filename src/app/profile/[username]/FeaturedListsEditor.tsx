@@ -66,18 +66,36 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
 
   if (!editing) {
     return (
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Featured Lists</h2>
-        <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-          Edit
-        </Button>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Featured Lists</h2>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+            Edit
+          </Button>
+        </div>
+        {featured.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {featured.map((list) => (
+              <a
+                key={list.id}
+                href={`/lists/${list.id}`}
+                className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-1"
+              >
+                <p className="font-medium text-sm">{list.name}</p>
+                <p className="text-xs text-muted-foreground">{list._count.items} items</p>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No featured lists yet. Click Edit to pin lists to your profile.
+          </p>
+        )}
       </div>
     );
   }
 
-  const pinnableLists = available.filter(
-    (l) => l.visibility === "public" || l.visibility === "friends"
-  );
+  const pinnableLists = available;
 
   return (
     <div className="space-y-4">
@@ -94,7 +112,7 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Pin lists to your profile. Only public or friends-only lists can be featured. Drag to reorder.
+        Pin lists to your profile. Drag to reorder.
       </p>
 
       <div className="space-y-2">
