@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "List" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW();
