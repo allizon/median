@@ -49,7 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user?.id) token.sub = user.id;
-      if ((user as any)?.username) token.username = (user as any).username as string;
+      if (user?.username) token.username = user.username;
       return token;
     },
     session({ session, token }) {
