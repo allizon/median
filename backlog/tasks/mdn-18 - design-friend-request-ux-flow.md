@@ -15,7 +15,7 @@ Design the UX for sending a friend request from a profile page, accepting/declin
 ## Context
 
 - Friend request is sent from the target user's profile page (PRD 5.6, story 2; PRD 3, Friends story 2).
-- The profile URL is `/@[username]` (PRD 5.9 URL structure). The PRD also references `/users/:username` in story 2 — these should resolve to the same page; the final URL format should be confirmed.
+- The profile URL is `/@[username]` (decided; PRD updated to match).
 - There is no notification system in v1 — the addressee must discover the pending request within the app (PRD 2, no notifications).
 - Friend button states on a profile page: Add Friend → Request Pending → Friends → Remove Friend (PRD 5.9).
 - Removing a friend immediately revokes access to friends-only content (PRD 5.6, story 5).

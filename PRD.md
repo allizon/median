@@ -50,7 +50,7 @@ These are explicitly out of scope for v1:
 2. As a returning user, I can log in and access my data.
 3. As a user, I can log out, immediately invalidating my session.
 4. As a user, I can view and edit my profile (username, display name).
-5. As a user, I have a shareable profile URL (`/users/:username`) that anyone can visit.
+5. As a user, I have a shareable profile URL (`/@[username]`) that anyone can visit.
 
 ### Media Catalog
 
@@ -103,7 +103,7 @@ These are explicitly out of scope for v1:
 ### Friends & Discovery
 
 1. As a user, I can search for other users by username.
-2. As a user, I can visit another user's profile page at `/users/:username` and send them a friend request.
+2. As a user, I can visit another user's profile page at `/@[username]` and send them a friend request.
 3. As a user, I can copy a shareable link to my own profile page.
 4. As a user, I can accept or decline incoming friend requests.
 5. As a user, I can remove a friend. Access to friends-only lists is revoked immediately.
@@ -387,7 +387,7 @@ Status can be set directly to any value — no hard transition enforcement. This
 **Finding users:**
 
 - Search by exact or partial username
-- Visit a profile at `/users/:username` directly
+- Visit a profile at `/@[username]` directly
 - Share your own profile link via the copy-link button on your profile page
 
 **Friend request flow:**

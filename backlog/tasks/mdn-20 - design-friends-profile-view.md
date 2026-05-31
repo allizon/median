@@ -23,7 +23,7 @@ Design what an accepted friend sees when visiting another user's profile — spe
 
 - Is there a separate "friend view" of the profile, or does the public profile page conditionally reveal more content when the viewer is a friend?
 - How are friends-only lists surfaced on the profile? (mixed into the featured lists section with a visibility badge, or a separate section)
-- Is there a `/users/:username/diary` page, or is diary content shown on the profile page itself?
+- Is there a `/@[username]/diary` page, or is diary content shown on the profile page itself?
 - How are diary entries displayed to a friend? (list of finished items with star ratings, all statuses, etc.)
 - How does the view degrade when the viewer is not a friend — are friends-only sections hidden, or shown with a "Friends only" lock state?
 - If the viewer removes the friend while on this page, does the content immediately disappear?

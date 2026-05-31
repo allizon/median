@@ -1,3 +1,4 @@
+# Backlog.MD MCP Guidelines
 
 <!-- BACKLOG.MD MCP GUIDELINES START -->
 
@@ -7,7 +8,7 @@
 
 This project uses Backlog.md MCP for all task and project management activities.
 
-**CRITICAL GUIDANCE**
+### CRITICAL GUIDANCE
 
 - If your client supports MCP resources, read `backlog://workflow/overview` to understand when and how to use Backlog for this project.
 - If your client only supports tools or the above request fails, call `backlog.get_backlog_instructions()` to load the tool-oriented overview. Use the `instruction` selector when you need `task-creation`, `task-execution`, or `task-finalization`.

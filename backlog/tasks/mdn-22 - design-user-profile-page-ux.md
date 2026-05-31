@@ -4,8 +4,12 @@ title: Design user profile page UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-labels: [UX]
-dependencies: [MDN-12]
+updated_date: '2026-05-31 16:06'
+labels:
+  - UX
+dependencies:
+  - MDN-12
+priority: high
 ---
 
 ## Description
@@ -15,7 +19,7 @@ Design the public profile page (`/@username`) and the owner's profile settings/e
 ## Context
 
 - The profile page is defined in PRD 5.9 with three sections: header, stats bar, and featured lists.
-- The page is visible to any authenticated user. Logged-out access is noted as "TBD" in the PRD but Open Question #1 resolved logged-out access as allowed in v1 — the PRD text in 5.9 needs correcting (see also MDN-18 which flagged the `/users/:username` vs `/@username` URL inconsistency).
+- The page is visible to any authenticated user. Logged-out access is noted as "TBD" in the PRD but Open Question #1 resolved logged-out access as allowed in v1 — the PRD text in 5.9 needs correcting.
 - Auth story 4 covers profile editing: username and display name.
 - Schema additions required: `User.showInProgressOnProfile` (bool), `List.featuredOnProfile` (bool), `List.profilePosition` (int nullable).
 - The owner sees a "Settings" link instead of the friend button (PRD 5.9 header).
@@ -27,6 +31,6 @@ Design the public profile page (`/@username`) and the owner's profile settings/e
 - Where does the profile edit flow live? (inline edit on profile page, or a dedicated `/settings/profile` form)
 - Where does the user manage featured lists and their order? (dedicated settings page, drag-and-drop on the profile page itself)
 - How does `showInProgressOnProfile` get toggled? (settings page toggle, or on the profile page directly)
-- What is the URL? The PRD uses both `/@username` (section 5.9) and `/users/:username` (user stories) — this needs a decision before implementation.
+- The URL is `/@[username]` (decided; all PRD references updated).
 - What does the stats bar show if the user has no finished items yet? (zero states)
 - How are featured list cards ordered/reordered? (drag-and-drop, up/down arrows, numeric input)
