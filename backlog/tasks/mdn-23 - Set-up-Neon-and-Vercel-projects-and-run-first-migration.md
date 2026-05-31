@@ -4,12 +4,13 @@ title: Set up Neon and Vercel projects and run first migration
 status: To Do
 assignee: []
 created_date: '2026-05-31 17:56'
+updated_date: '2026-05-31 18:08'
 labels:
   - infrastructure
   - setup
 dependencies: []
 priority: high
-ordinal: 23000
+ordinal: 500
 ---
 
 ## Description
