@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
 import { Nav } from "@/components/nav";
 
 export default async function AppLayout({
@@ -10,15 +9,11 @@ export default async function AppLayout({
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { username: true },
-  });
+  if (!session.user.username) redirect("/login");  // orphaned session guard
 
   return (
     <>
-      <Nav username={user?.username} />
+      <Nav username={session.user.username} />
       {children}
     </>
   );
