@@ -5,10 +5,9 @@ import SettingsForm from "./SettingsForm";
 
 export default async function SettingsPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: session!.user!.id! },
     select: {
       username: true,
       displayName: true,
