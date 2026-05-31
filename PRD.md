@@ -262,7 +262,7 @@ These are explicitly out of scope for v1:
 
 ### 5.1 Authentication
 
-Email/password auth only. Passwords hashed with bcrypt or argon2. **Server-side sessions** — not JWT (see [ADR-0002](./docs/adr/0002-server-side-sessions-not-jwt.md)). Sessions stored in database or Redis.
+Email/password auth only. Passwords hashed with bcrypt or argon2. **Server-side sessions** — not JWT (see [ADR-0002](./docs/adr/0002-server-side-sessions-not-jwt.md)). Sessions stored in a **Postgres table** (not Redis — Postgres via Neon is already the only required infrastructure; see [ADR-0003](./docs/adr/0003-postgres-neon.md), [ADR-0004](./docs/adr/0004-prisma-orm.md)).
 
 No OAuth in v1. No email sending in v1 — password recovery requires a manual database reset. This is an accepted operational gap for the initial closed user base.
 
