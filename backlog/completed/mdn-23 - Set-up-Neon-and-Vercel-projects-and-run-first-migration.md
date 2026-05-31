@@ -1,10 +1,10 @@
 ---
 id: MDN-23
 title: Set up Neon and Vercel projects and run first migration
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-31 17:56'
-updated_date: '2026-05-31 18:08'
+updated_date: '2026-05-31 18:39'
 labels:
   - infrastructure
   - setup
