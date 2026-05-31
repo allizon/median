@@ -164,6 +164,7 @@ model List {
   featuredOnProfile Boolean        @default(false)
   profilePosition   Int?
   createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   owner   User         @relation("ListOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members ListMember[]
