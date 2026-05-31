@@ -4,13 +4,13 @@ title: Design collaborative list invite UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
   - collaborative-lists
 dependencies:
   - MDN-12
-ordinal: 14000
+ordinal: 33000
 ---
 
 ## Description

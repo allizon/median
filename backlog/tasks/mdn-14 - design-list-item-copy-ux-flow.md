@@ -4,14 +4,14 @@ title: Design list item copy UX flow
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
   - media-lists
 dependencies:
   - MDN-12
   - MDN-13
-ordinal: 13000
+ordinal: 32000
 ---
 
 ## Description

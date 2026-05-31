@@ -4,11 +4,11 @@ title: Design catalog search UX flow
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
 dependencies: []
-ordinal: 5000
+ordinal: 24000
 ---
 
 ## Description

@@ -4,14 +4,14 @@ title: Design media item page UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
 dependencies:
   - MDN-6
   - MDN-9
 priority: high
-ordinal: 23000
+ordinal: 500
 ---
 
 ## Description

@@ -4,14 +4,14 @@ title: Design collaborative list page and voting UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
   - collaborative-lists
 dependencies:
   - MDN-13
   - MDN-15
-ordinal: 15000
+ordinal: 34000
 ---
 
 ## Description

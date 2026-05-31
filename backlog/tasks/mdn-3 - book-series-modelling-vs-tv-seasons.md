@@ -4,10 +4,10 @@ title: Book series - analogy to TV seasons worth exploring
 status: To Do
 assignee: []
 created_date: ''
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels: []
 dependencies: []
-ordinal: 2000
+ordinal: 23000
 ---
 
 ## Question

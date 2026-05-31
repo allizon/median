@@ -4,13 +4,13 @@ title: Design friend's profile view
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
   - friends
 dependencies:
   - MDN-18
-ordinal: 19000
+ordinal: 38000
 ---
 
 ## Description

@@ -4,13 +4,13 @@ title: Design collaborative list member management UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 17:28'
+updated_date: '2026-05-31 19:28'
 labels:
   - UX
   - collaborative-lists
 dependencies:
   - MDN-15
-ordinal: 16000
+ordinal: 35000
 ---
 
 ## Description
