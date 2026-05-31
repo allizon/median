@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { MediaType } from "@prisma/client";
 import { AddMediaSheet } from "@/components/add-media-sheet";
+import { AddToListButtons } from "@/components/add-to-list-buttons";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ interface CatalogSearchProps {
   typeFilter: MediaType | undefined;
   results: MediaResult[];
   isAuthenticated: boolean;
+  wishlistMediaIds: string[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -46,6 +48,7 @@ export function CatalogSearch({
   typeFilter: initialTypeFilter,
   results,
   isAuthenticated,
+  wishlistMediaIds,
 }: CatalogSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -53,6 +56,7 @@ export function CatalogSearch({
   const [inputValue, setInputValue] = React.useState(initialQuery);
   const [addSheetOpen, setAddSheetOpen] = React.useState(false);
 
+  const wishlistSet = React.useMemo(() => new Set(wishlistMediaIds), [wishlistMediaIds]);
   const showResults = initialQuery.length > 0;
   const hasResults = results.length > 0;
 
@@ -128,21 +132,29 @@ export function CatalogSearch({
           {hasResults ? (
             <ul className="divide-y divide-border rounded-lg border" role="list">
               {results.map((item) => (
-                <li key={item.id} className="flex items-center justify-between px-4 py-3 gap-4">
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {typeLabel(item.type)}
-                      {item.year ? ` · ${item.year}` : ""}
-                      {item.creator ? ` · ${item.creator}` : ""}
-                    </p>
+                <li key={item.id} className="px-4 py-3 space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{item.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {typeLabel(item.type)}
+                        {item.year ? ` · ${item.year}` : ""}
+                        {item.creator ? ` · ${item.creator}` : ""}
+                      </p>
+                    </div>
+                    <a
+                      href={`/media/${item.id}`}
+                      className="shrink-0 text-sm text-primary hover:underline"
+                    >
+                      View
+                    </a>
                   </div>
-                  <a
-                    href={`/media/${item.id}`}
-                    className="shrink-0 text-sm text-primary hover:underline"
-                  >
-                    View
-                  </a>
+                  {isAuthenticated && (
+                    <AddToListButtons
+                      mediaId={item.id}
+                      inWishlist={wishlistSet.has(item.id)}
+                    />
+                  )}
                 </li>
               ))}
             </ul>

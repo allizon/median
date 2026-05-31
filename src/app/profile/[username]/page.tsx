@@ -275,7 +275,7 @@ export default async function ProfilePage({
       )}
 
       {/* Logged-out / stranger gate message */}
-      {!canSeeStats && role !== "owner" && (
+      {!canSeeStats && (
         <div className="rounded-xl border border-border bg-muted/30 p-6 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
             {role === "logged-out"
