@@ -26,8 +26,7 @@ export default async function HomePage() {
       select: {
         id: true,
         name: true,
-        visibility: true,
-        isDefaultWishlist: true,
+isDefaultWishlist: true,
         _count: { select: { items: true, members: true } },
       },
     }),
@@ -55,7 +54,7 @@ export default async function HomePage() {
           href="/search"
           className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full justify-center")}
         >
-          ✎ Log something
+          &#10002; Log something
         </Link>
       </div>
 
@@ -66,25 +65,29 @@ export default async function HomePage() {
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             My Lists
           </h2>
-          <ul className="space-y-0.5">
-            {lists.map((list) => (
-              <li key={list.id}>
-                <Link
-                  href={`/lists/${list.id}`}
-                  className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors gap-2"
-                >
-                  <span className="truncate">{list.name}</span>
-                  <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
-                    {list._count.members > 0 && (
-                      // _count.members counts ListMember rows (non-owner members); +1 for the owner
-                      <span className="text-xs">{list._count.members + 1} members</span>
-                    )}
-                    <span>{list._count.items}</span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {lists.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No lists yet.</p>
+          ) : (
+            <ul className="space-y-0.5">
+              {lists.map((list) => (
+                <li key={list.id}>
+                  <Link
+                    href={`/lists/${list.id}`}
+                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors gap-2"
+                  >
+                    <span className="truncate">{list.name}</span>
+                    <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
+                      {list._count.members > 0 && (
+                        // _count.members counts ListMember rows (non-owner members); +1 for the owner
+                        <span className="text-xs">{list._count.members + 1} members</span>
+                      )}
+                      <span>{list._count.items}</span>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* Up Next */}
