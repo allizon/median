@@ -472,7 +472,7 @@ The home dashboard is the logged-in user's primary workspace. It is private — 
 
 ### 5.9 Public Profile (`/@username`)
 
-The public profile is visible to any authenticated user. Logged-out access is TBD (see Open Question #1).
+The public profile is visible to any visitor, including logged-out users.
 
 #### Header
 

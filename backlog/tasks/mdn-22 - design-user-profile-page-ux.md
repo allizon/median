@@ -1,7 +1,7 @@
 ---
 id: MDN-22
 title: Design user profile page UX
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-05-31'
 updated_date: '2026-05-31 17:28'

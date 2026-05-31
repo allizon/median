@@ -9,7 +9,8 @@ export default auth((req) => {
   const isPublicRoute =
     isAuthRoute ||
     req.nextUrl.pathname.startsWith("/api/auth") ||
-    req.nextUrl.pathname.startsWith("/@");
+    req.nextUrl.pathname.startsWith("/@") ||
+    req.nextUrl.pathname.startsWith("/profile/");
 
   if (!isLoggedIn && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
