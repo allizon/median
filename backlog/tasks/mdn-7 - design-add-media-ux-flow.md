@@ -4,8 +4,12 @@ title: Design add media UX flow (incl. TV seasons)
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-labels: [UX]
-dependencies: [MDN-6]
+updated_date: '2026-05-31 17:28'
+labels:
+  - UX
+dependencies:
+  - MDN-6
+ordinal: 6000
 ---
 
 ## Description

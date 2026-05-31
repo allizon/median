@@ -4,12 +4,13 @@ title: Design user profile page UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 16:06'
+updated_date: '2026-05-31 17:28'
 labels:
   - UX
 dependencies:
   - MDN-12
 priority: high
+ordinal: 21000
 ---
 
 ## Description

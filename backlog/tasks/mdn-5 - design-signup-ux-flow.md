@@ -4,8 +4,11 @@ title: Design signup UX flow
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-labels: [UX]
+updated_date: '2026-05-31 17:28'
+labels:
+  - UX
 dependencies: []
+ordinal: 4000
 ---
 
 ## Description

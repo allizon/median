@@ -4,8 +4,12 @@ title: Design user search UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-labels: [UX, friends]
+updated_date: '2026-05-31 17:28'
+labels:
+  - UX
+  - friends
 dependencies: []
+ordinal: 18000
 ---
 
 ## Description

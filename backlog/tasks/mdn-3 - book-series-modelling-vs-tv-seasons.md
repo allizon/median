@@ -2,7 +2,12 @@
 id: MDN-3
 title: Book series - analogy to TV seasons worth exploring
 status: To Do
-created: 2026-05-31
+assignee: []
+created_date: ''
+updated_date: '2026-05-31 17:28'
+labels: []
+dependencies: []
+ordinal: 2000
 ---
 
 ## Question

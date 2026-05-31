@@ -4,8 +4,14 @@ title: Design add-to-list UX flow
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-labels: [UX, media-lists]
-dependencies: [MDN-6, MDN-12]
+updated_date: '2026-05-31 17:28'
+labels:
+  - UX
+  - media-lists
+dependencies:
+  - MDN-6
+  - MDN-12
+ordinal: 12000
 ---
 
 ## Description

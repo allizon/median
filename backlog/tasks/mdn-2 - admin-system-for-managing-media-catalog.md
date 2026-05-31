@@ -2,11 +2,17 @@
 id: MDN-2
 title: Admin system for managing media catalog
 status: To Do
-created: 2026-05-31
+assignee: []
+created_date: ''
+updated_date: '2026-05-31 17:28'
+labels: []
+dependencies: []
+ordinal: 22000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Build an admin interface for managing the shared media catalog. The current design allows any logged-in user to add and edit media items, but there is no way to delete items, merge duplicates, or perform bulk operations. An admin system would provide privileged access to these operations.
 
 ## Scope to define
@@ -31,3 +37,37 @@ Build an admin interface for managing the shared media catalog. The current desi
 
 - PRD section 5.2 (Media Catalog — deduplication note)
 - PRD Phase 3 (External Catalog Enrichment)
+<!-- SECTION:DESCRIPTION:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Completed Task 2: Install Tailwind v4 and apply AstroVista theme
+
+All steps executed successfully:
+
+1. Installed Tailwind v4 packages
+   - tailwindcss 4.3.0
+   - @tailwindcss/postcss 4.3.0
+   - postcss 8.5.15
+
+2. Created PostCSS configuration file (postcss.config.mjs) with @tailwindcss/postcss plugin
+
+3. Replaced globals.css with AstroVista theme
+   - Imported Tailwind CSS
+   - Added custom variant for dark mode
+   - Configured root CSS variables with oklch color values for light theme
+   - Configured .dark class CSS variables for dark theme
+   - Added @theme inline block with color palette and design tokens
+   - Added base layer styles for borders, outlines, and body
+
+4. Verified dev server starts without CSS errors
+   - Server started successfully in 224ms
+   - GET / responded with 200 status
+   - No CSS compilation errors
+
+5. Committed all changes to git
+   - Commit: 9913f23
+   - Message: "feat: install Tailwind v4 with AstroVista theme tokens"
+   - Modified files: postcss.config.mjs, src/app/globals.css, package.json, pnpm-lock.yaml
+<!-- SECTION:FINAL_SUMMARY:END -->
