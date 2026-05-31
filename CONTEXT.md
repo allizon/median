@@ -26,7 +26,7 @@ _Avoid_: hidden list
 - An **Anonymous Visitor** can view a **Public List** only
 - An authenticated friend can view a **Friends-Only List** when friendship is accepted
 
-## Example dialogue
+### Example dialogue
 
 > **Dev:** "Can someone without an account open this URL?"
 > **Domain expert:** "Yes, if it is a **Public List**; **Friends-Only List** and **Private List** always require authentication."
