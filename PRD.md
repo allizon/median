@@ -334,6 +334,79 @@ No individual ratings shown — only the aggregate. This is intentional.
 
 ---
 
+### 5.8 Home Dashboard (`/`)
+
+The home dashboard is the logged-in user's primary workspace. It is private — only visible to the authenticated user. Unauthenticated users hitting `/` are redirected to `/login`.
+
+**Layout:** Widget/card grid. Four widgets displayed simultaneously.
+
+#### Widget 1 — Log Something
+- Prominent "Log something" button at the top of the page
+- Opens a modal with this flow: search catalog by title → select from results (or add new media item if not found) → choose status → optional rating and notes → save
+- Creates a new DiaryEntry or updates an existing one
+
+#### Widget 2 — My Diary (recent entries)
+- Shows the last ~5 diary entries across all statuses
+- Each entry shows: media title, media type, status badge, rating (if finished)
+- Link to full diary page
+
+#### Widget 3 — My Lists
+- Shows all the user's lists (personal and collaborative) as cards
+- Each card: list name, item count, visibility badge, collaborator count (if collaborative)
+- "New list" button
+- Each card links to that list's page
+
+#### Widget 4 — Recent Collaborative Activity
+- Flat chronological feed of the last ~10 events across all collaborative lists the user is a member of
+- Event types:
+  - "[Username] added [Media Title] to [List Name]"
+  - "[Username] voted on [Media Title] in [List Name]"
+  - "[Username] marked [Media Title] as done in [List Name]"
+- Each event links to the relevant list
+- Events are derived from existing data (ListItem.createdAt, ListVote timestamps, DiaryEntry.updatedAt) — no separate activity log table in v1
+
+#### Widget 5 — Up Next
+- In v1: pulls top items from the user's default wishlist, ordered by date added
+- Shows 3–5 items: media title, type
+- Configurable source (choose which list(s) to pull from) is deferred to a later phase
+
+---
+
+### 5.9 Public Profile (`/@username`)
+
+The public profile is visible to any authenticated user. Logged-out access is TBD (see Open Question #1).
+
+#### Header
+- Username and display name
+- Member since date
+- If viewer is a different user: Friend button with states (Add Friend / Request Pending / Friends / Remove Friend)
+- If viewer is the profile owner: link to Settings
+
+#### Stats Bar
+- Total finished by type: "X movies · Y TV shows · Z books"
+- Average rating given: mean of all non-null ratings on finished DiaryEntries
+- Currently in progress: hidden by default; user can opt in via a global profile setting (`showInProgressOnProfile`, default false). When enabled, shows current in-progress items.
+
+#### Featured Lists
+- The profile owner selects which lists to pin to their profile (via Settings)
+- Only lists with `public` or `friends` visibility can be featured (friends-only lists are only shown to accepted friends viewing the profile)
+- Each card shows: list name, item count, first 3 media titles
+- Order is user-controlled (position field)
+
+**No comments, no activity feed, no reviews** — intentionally minimal.
+
+#### Schema additions required
+- `User.showInProgressOnProfile` — boolean, default false
+- `List.featuredOnProfile` — boolean, default false
+- `List.profilePosition` — integer nullable (ordering of featured lists on profile)
+
+#### URL Structure
+- Home dashboard: `/`
+- Public profile: `/@[username]`
+- Settings: `/settings`
+
+---
+
 ## 6. Phasing
 
 ### v1 — Core Product
