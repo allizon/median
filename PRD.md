@@ -42,6 +42,12 @@ These are explicitly out of scope for v1:
 
 ---
 
+## 2.1 Non-Functional Requirements
+
+- **Responsive design (required).** Every page and interaction must be fully usable on mobile viewports. There is no native mobile app in v1, so the responsive web experience is the mobile experience. No feature may be desktop-only.
+
+---
+
 ## 3. User Stories
 
 ### Authentication & Account
