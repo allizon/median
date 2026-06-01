@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -35,6 +38,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
@@ -42,7 +47,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
-    "typescript": "^5"
+    "happy-dom": "^20.9.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5",
+    "vitest": "^4.1.7"
   },
   "packageManager": "pnpm@11.1.2+sha1.ed39d701687311ce9345771c62376f9fe7286694"
 }
