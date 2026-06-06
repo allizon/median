@@ -112,3 +112,25 @@ export async function createMedia(
 
   return { status: "created", mediaId: media.id };
 }
+
+// ── searchCatalog ─────────────────────────────────────────────────────────────
+
+export type CatalogResult = {
+  id: string;
+  title: string;
+  type: MediaType;
+  year: number | null;
+  creator: string | null;
+};
+
+export async function searchCatalog(query: string): Promise<CatalogResult[]> {
+  const q = query.trim();
+  if (q.length < 1) return [];
+
+  return prisma.media.findMany({
+    where: { title: { contains: q, mode: "insensitive" } },
+    orderBy: { title: "asc" },
+    take: 20,
+    select: { id: true, title: true, type: true, year: true, creator: true },
+  });
+}

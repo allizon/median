@@ -4,11 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NewListButton } from "@/components/new-list-button";
-
-const TYPE_LABELS: Record<string, string> = {
-  movie: "Movie",
-  tv_show: "TV Show",
-};
+import { WishlistWidget, type WishlistItem } from "@/components/wishlist-widget";
 
 export default async function HomePage() {
   const session = await auth();
@@ -33,14 +29,21 @@ export default async function HomePage() {
     prisma.listItem.findMany({
       where: { list: { ownerId: userId, isDefaultWishlist: true } },
       orderBy: { addedAt: "asc" },
-      take: 5,
+      take: 10,
       select: {
-        media: { select: { id: true, title: true, type: true } },
+        id: true,
+        media: { select: { id: true, title: true, type: true, year: true, creator: true } },
       },
     }),
   ]);
 
   const wishlist = lists.find((l) => l.isDefaultWishlist);
+  const nonWishlistLists = lists.filter((l) => !l.isDefaultWishlist);
+
+  const typedWishlistItems: WishlistItem[] = wishlistItems.map((i) => ({
+    id: i.id,
+    media: i.media,
+  }));
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 space-y-6">
@@ -60,84 +63,63 @@ export default async function HomePage() {
         </Link>
       </div>
 
-      {/* Widget grid */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {/* My Lists */}
-        <section className="rounded-xl border border-border bg-card p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              My Lists
-            </h2>
-            <NewListButton />
-          </div>
-          {lists.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No lists yet.</p>
-          ) : (
-            <ul className="space-y-0.5">
-              {lists.map((list) => (
-                <li key={list.id}>
-                  <Link
-                    href={`/lists/${list.id}`}
-                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors gap-2"
-                  >
-                    <span className="truncate">{list.name}</span>
-                    <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs">
-                      {list._count.members > 0 && (
-                        <span>{list._count.members + 1} members</span>
-                      )}
-                      <span>{list._count.items} items</span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      {/* Up Next — full width, hero widget */}
+      <section className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Up Next
+          </h2>
+          {wishlist && (
+            <Link
+              href={`/lists/${wishlist.id}`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Manage wishlist →
+            </Link>
           )}
-        </section>
+        </div>
+        <div className="px-4 pb-4">
+          <WishlistWidget
+            initialItems={typedWishlistItems}
+            wishlistId={wishlist?.id ?? null}
+          />
+        </div>
+      </section>
 
-        {/* Up Next (Wishlist preview) */}
-        <section className="rounded-xl border border-border bg-card p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Up Next
-            </h2>
-            {wishlist && (
-              <Link
-                href={`/lists/${wishlist.id}`}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                See all →
-              </Link>
-            )}
-          </div>
-          {wishlistItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nothing in your Wishlist yet.{" "}
-              <Link
-                href="/search"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Search to add something →
-              </Link>
-            </p>
-          ) : (
-            <ul className="space-y-0.5">
-              {wishlistItems.map(({ media }) => (
-                <li key={media.id}>
-                  <Link
-                    href={`/media/${media.id}`}
-                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors gap-2"
-                  >
-                    <span className="truncate">{media.title}</span>
-                    <span className="text-muted-foreground shrink-0 text-xs">
-                      {TYPE_LABELS[media.type] ?? media.type}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+      {/* My Lists */}
+      <section className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            My Lists
+          </h2>
+          <NewListButton />
+        </div>
+        {nonWishlistLists.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No lists yet.{" "}
+            <span className="text-primary">Create one above to organize what you want to watch.</span>
+          </p>
+        ) : (
+          <ul className="space-y-0.5">
+            {nonWishlistLists.map((list) => (
+              <li key={list.id}>
+                <Link
+                  href={`/lists/${list.id}`}
+                  className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors gap-2"
+                >
+                  <span className="truncate">{list.name}</span>
+                  <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs">
+                    {list._count.members > 0 && (
+                      <span>{list._count.members + 1} members</span>
+                    )}
+                    <span>{list._count.items} items</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

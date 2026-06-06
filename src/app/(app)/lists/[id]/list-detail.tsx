@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ListSheet } from "@/components/list-sheet";
 import { toastManager } from "@/components/ui/toaster";
 import { removeListItem, deleteList, setListItemScore, clearListItemScore } from "@/lib/actions/list";
+import { AddToListSearchSheet } from "@/components/add-to-list-search-sheet";
 
 const VISIBILITY_LABELS: Record<ListVisibility, string> = {
   private: "Private",
@@ -51,6 +52,7 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
   const [list, setList] = React.useState(initialList);
   const [items, setItems] = React.useState(initialItems);
   const [editOpen, setEditOpen] = React.useState(false);
+  const [addOpen, setAddOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
   const [savingScore, setSavingScore] = React.useState<string | null>(null); // listItemId
@@ -151,6 +153,9 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
+            + Add items
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
             Edit
           </Button>
@@ -246,6 +251,16 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
           ))}
         </ul>
       )}
+
+      {/* Add items Sheet */}
+      <AddToListSearchSheet
+        listId={list.id}
+        listName={list.name}
+        existingMediaIds={new Set(items.map((i) => i.media.id))}
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onAdded={() => router.refresh()}
+      />
 
       {/* Edit Sheet */}
       <ListSheet

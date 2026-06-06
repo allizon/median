@@ -56,7 +56,6 @@ export function CatalogSearch({
   const [addSheetOpen, setAddSheetOpen] = React.useState(false);
 
   const wishlistSet = React.useMemo(() => new Set(wishlistMediaIds), [wishlistMediaIds]);
-  const showResults = initialQuery.length > 0;
   const hasResults = results.length > 0;
 
   // Push URL params to trigger server re-render with new results
@@ -82,7 +81,9 @@ export function CatalogSearch({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Search catalog</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {initialQuery ? `Results for "${initialQuery}"` : "Browse catalog"}
+      </h1>
 
       {/* Search bar */}
       <form onSubmit={handleFormSubmit} className="flex gap-2 mb-4" role="search">
@@ -111,9 +112,9 @@ export function CatalogSearch({
               key={value}
               type="button"
               onClick={() => handleTypeChange(value)}
-              aria-pressed={active}
+              aria-pressed={active ? true : false}
               className={cn(
-                "rounded-full border px-3 py-1 text-sm transition-colors",
+                "rounded-full border px-3 py-1 text-sm transition-colors cursor-pointer",
                 active
                   ? "bg-primary text-primary-foreground border-primary"
                   : "border-input bg-background text-foreground hover:bg-muted",
@@ -126,61 +127,49 @@ export function CatalogSearch({
       </div>
 
       {/* Results */}
-      {showResults && (
-        <>
-          {hasResults ? (
-            <ul className="divide-y divide-border rounded-lg border" role="list">
-              {results.map((item) => (
-                <li key={item.id} className="px-4 py-3 space-y-2">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{item.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {typeLabel(item.type)}
-                        {item.year ? ` · ${item.year}` : ""}
-                        {item.creator ? ` · ${item.creator}` : ""}
-                      </p>
-                    </div>
-                    <a
-                      href={`/media/${item.id}`}
-                      className="shrink-0 text-sm text-primary hover:underline"
-                    >
-                      View
-                    </a>
-                  </div>
-                  {isAuthenticated && (
-                    <AddToListButtons
-                      mediaId={item.id}
-                      inWishlist={wishlistSet.has(item.id)}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            /* Zero-results empty state */
-            <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-input py-12 text-center">
-              <div>
-                <p className="font-medium">No results for &ldquo;{initialQuery}&rdquo;</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  This item isn&apos;t in the catalog yet.
-                </p>
+      {hasResults ? (
+        <ul className="divide-y divide-border rounded-lg border" role="list">
+          {results.map((item) => (
+            <li key={item.id} className="px-4 py-3 space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{item.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {typeLabel(item.type)}
+                    {item.year ? ` · ${item.year}` : ""}
+                    {item.creator ? ` · ${item.creator}` : ""}
+                  </p>
+                </div>
+                <a
+                  href={`/media/${item.id}`}
+                  className="shrink-0 text-sm text-primary hover:underline"
+                >
+                  View
+                </a>
               </div>
               {isAuthenticated && (
-                <Button onClick={() => setAddSheetOpen(true)}>
-                  Add &ldquo;{initialQuery}&rdquo; to catalog
-                </Button>
+                <AddToListButtons
+                  mediaId={item.id}
+                  inWishlist={wishlistSet.has(item.id)}
+                />
               )}
-            </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-input py-12 text-center">
+          <div>
+            <p className="font-medium">No results for &ldquo;{initialQuery}&rdquo;</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              This item isn&apos;t in the catalog yet.
+            </p>
+          </div>
+          {isAuthenticated && (
+            <Button onClick={() => setAddSheetOpen(true)}>
+              Add &ldquo;{initialQuery}&rdquo; to catalog
+            </Button>
           )}
-        </>
-      )}
-
-      {/* Empty / initial state (no search yet) */}
-      {!showResults && (
-        <p className="text-sm text-muted-foreground text-center py-12">
-          Search for a movie or TV show above.
-        </p>
+        </div>
       )}
 
       {/* Add media slide-over */}

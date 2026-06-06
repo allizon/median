@@ -17,23 +17,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const typeFilter =
     type && VALID_TYPES.has(type) ? (type as MediaType) : undefined;
 
-  const results = query
-    ? await prisma.media.findMany({
-        where: {
-          title: { contains: query, mode: "insensitive" },
-          ...(typeFilter ? { type: typeFilter } : {}),
-        },
-        select: {
-          id: true,
-          title: true,
-          year: true,
-          creator: true,
-          type: true,
-        },
-        orderBy: { title: "asc" },
-        take: 50,
-      })
-    : [];
+  const results = await prisma.media.findMany({
+    where: {
+      ...(query ? { title: { contains: query, mode: "insensitive" } } : {}),
+      ...(typeFilter ? { type: typeFilter } : {}),
+    },
+    select: {
+      id: true,
+      title: true,
+      year: true,
+      creator: true,
+      type: true,
+    },
+    orderBy: { title: "asc" },
+    take: 50,
+  });
 
   // Pre-load wishlist state for each result so buttons render correctly
   let wishlistMediaIds = new Set<string>();
