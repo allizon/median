@@ -17,6 +17,10 @@ ordinal: 33000
 
 Design the UX for inviting a collaborator to a list and the accept/decline flow for the invited user.
 
+## Key design implication
+
+Per MDN-32, all lists start as personal. **The first invite is the moment a list becomes collaborative.** This means the invite flow carries more weight than simply "adding a member" — it's a mode transition. The UX should reflect that: inviting the first person may feel like a distinct gesture (turning a personal list into a shared one) rather than a routine member management action.
+
 ## Context
 
 - The list owner invites another user by username; on acceptance they become a `ListMember` (PRD 5.5, stories 1–2).
