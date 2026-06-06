@@ -7,13 +7,11 @@ import { AddToListButtons } from "@/components/add-to-list-buttons";
 const TYPE_LABELS: Record<string, string> = {
   movie: "Movie",
   tv_show: "TV Show",
-  book: "Book",
 };
 
 const CREATOR_LABELS: Record<string, string> = {
   movie: "Director",
   tv_show: "Creator / Showrunner",
-  book: "Author",
 };
 
 export default async function MediaItemPage({

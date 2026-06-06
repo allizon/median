@@ -7,7 +7,7 @@ interface SearchPageProps {
   searchParams: Promise<{ q?: string; type?: string }>;
 }
 
-const VALID_TYPES = new Set<string>(["movie", "tv_show", "book"]);
+const VALID_TYPES = new Set<string>(["movie", "tv_show"]);
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { q, type } = await searchParams;

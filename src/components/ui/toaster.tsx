@@ -40,26 +40,35 @@ function ToastViewport() {
               </Toast.Description>
             )}
           </Toast.Content>
-          <Toast.Close
-            className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            aria-label="Dismiss"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          <div className="flex items-center gap-1 shrink-0">
+            {toast.actionProps && (
+              <button
+                type="button"
+                {...toast.actionProps}
+                className="rounded px-2 py-1 text-xs font-medium text-primary hover:bg-muted transition-colors"
+              />
+            )}
+            <Toast.Close
+              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              aria-label="Dismiss"
             >
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </Toast.Close>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </Toast.Close>
+          </div>
         </Toast.Root>
       ))}
     </Toast.Viewport>

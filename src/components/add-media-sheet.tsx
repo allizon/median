@@ -38,12 +38,10 @@ interface AddMediaSheetProps {
 const TYPE_OPTIONS: { value: MediaType; label: string }[] = [
   { value: "movie", label: "Movie" },
   { value: "tv_show", label: "TV Show" },
-  { value: "book", label: "Book" },
 ];
 
 function creatorLabel(type: MediaType): string {
   if (type === "movie") return "Director";
-  if (type === "book") return "Author";
   return "Creator / Showrunner";
 }
 
@@ -152,7 +150,7 @@ export function AddMediaSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title="Add new item" description="Add a movie, TV show, or book to the catalog">
+      <SheetContent title="Add new item" description="Add a movie or TV show to the catalog">
         <form
           onSubmit={(e) => {
             e.preventDefault();

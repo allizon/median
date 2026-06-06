@@ -32,13 +32,12 @@ const TYPE_FILTERS: { value: MediaType | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "movie", label: "Movies" },
   { value: "tv_show", label: "TV Shows" },
-  { value: "book", label: "Books" },
 ];
 
 function typeLabel(type: MediaType): string {
   if (type === "movie") return "Movie";
   if (type === "tv_show") return "TV Show";
-  return "Book";
+  return type;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -180,7 +179,7 @@ export function CatalogSearch({
       {/* Empty / initial state (no search yet) */}
       {!showResults && (
         <p className="text-sm text-muted-foreground text-center py-12">
-          Search for a movie, TV show, or book above.
+          Search for a movie or TV show above.
         </p>
       )}
 

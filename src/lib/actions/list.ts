@@ -1,8 +1,10 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { ListVisibility } from "@prisma/client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -113,6 +115,177 @@ export async function addToList(
   });
 
   return { status: "added", listName: list.name };
+}
+
+// ── createList ────────────────────────────────────────────────────────────────
+
+export type CreateListResult =
+  | { status: "created"; id: string; name: string }
+  | { status: "error"; message: string };
+
+export async function createList(
+  name: string,
+  visibility: ListVisibility,
+): Promise<CreateListResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
+
+  const parsed = z
+    .object({ name: z.string().min(1).max(200), visibility: z.enum(["private", "public"]) })
+    .safeParse({ name, visibility });
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+  const list = await prisma.list.create({
+    data: {
+      name: parsed.data.name,
+      visibility: parsed.data.visibility,
+      ownerId: session.user.id,
+      isDefaultWishlist: false,
+    },
+    select: { id: true, name: true },
+  });
+
+  revalidatePath("/");
+  return { status: "created", id: list.id, name: list.name };
+}
+
+// ── updateList ────────────────────────────────────────────────────────────────
+
+export type UpdateListResult =
+  | { status: "updated" }
+  | { status: "error"; message: string };
+
+export async function updateList(
+  id: string,
+  updates: { name?: string; visibility?: ListVisibility },
+): Promise<UpdateListResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
+
+  const list = await prisma.list.findFirst({
+    where: { id, ownerId: session.user.id },
+    select: { isDefaultWishlist: true },
+  });
+  if (!list) return { status: "error", message: "List not found" };
+
+  const parsed = z
+    .object({
+      name: z.string().min(1).max(200).optional(),
+      visibility: z.enum(["private", "public"]).optional(),
+    })
+    .safeParse(updates);
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+  const data: { name?: string; visibility?: ListVisibility } = {};
+  if (parsed.data.visibility !== undefined) data.visibility = parsed.data.visibility;
+  if (parsed.data.name !== undefined && !list.isDefaultWishlist) data.name = parsed.data.name;
+
+  await prisma.list.update({ where: { id }, data });
+
+  revalidatePath("/");
+  revalidatePath(`/lists/${id}`);
+  return { status: "updated" };
+}
+
+// ── deleteList ────────────────────────────────────────────────────────────────
+
+export type DeleteListResult =
+  | { status: "deleted" }
+  | { status: "error"; message: string };
+
+export async function deleteList(id: string): Promise<DeleteListResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
+
+  const list = await prisma.list.findFirst({
+    where: { id, ownerId: session.user.id },
+    select: { isDefaultWishlist: true },
+  });
+  if (!list) return { status: "error", message: "List not found" };
+  if (list.isDefaultWishlist) return { status: "error", message: "Cannot delete default Wishlist" };
+
+  await prisma.list.delete({ where: { id } });
+
+  revalidatePath("/");
+  return { status: "deleted" };
+}
+
+// ── removeListItem ────────────────────────────────────────────────────────────
+
+export type RemoveListItemResult =
+  | { status: "removed" }
+  | { status: "error"; message: string };
+
+export async function removeListItem(listItemId: string): Promise<RemoveListItemResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
+
+  const item = await prisma.listItem.findFirst({
+    where: { id: listItemId, list: { ownerId: session.user.id } },
+    select: { id: true, listId: true },
+  });
+  if (!item) return { status: "error", message: "Item not found" };
+
+  await prisma.listItem.delete({ where: { id: listItemId } });
+
+  revalidatePath(`/lists/${item.listId}`);
+  return { status: "removed" };
+}
+
+// ── setListItemScore ──────────────────────────────────────────────────────────
+
+export type SetListItemScoreResult =
+  | { status: "scored" }
+  | { status: "error"; message: string };
+
+export async function setListItemScore(
+  listItemId: string,
+  score: number,
+): Promise<SetListItemScoreResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
+
+  const parsed = z
+    .object({ listItemId: z.string().cuid(), score: z.number().int().min(0).max(4) })
+    .safeParse({ listItemId, score });
+  if (!parsed.success) return { status: "error", message: "Invalid input" };
+
+  const item = await prisma.listItem.findFirst({
+    where: { id: listItemId, list: { ownerId: session.user.id } },
+    select: { id: true },
+  });
+  if (!item) return { status: "error", message: "Item not found" };
+
+  await prisma.listItemScore.upsert({
+    where: { listItemId_userId: { listItemId, userId: session.user.id } },
+    create: { listItemId, userId: session.user.id, score: parsed.data.score },
+    update: { score: parsed.data.score },
+  });
+
+  return { status: "scored" };
+}
+
+// ── clearListItemScore ────────────────────────────────────────────────────────
+
+export type ClearListItemScoreResult =
+  | { status: "cleared" }
+  | { status: "error"; message: string };
+
+export async function clearListItemScore(listItemId: string): Promise<ClearListItemScoreResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
+
+  const item = await prisma.listItem.findFirst({
+    where: { id: listItemId, list: { ownerId: session.user.id } },
+    select: { id: true },
+  });
+  if (!item) return { status: "error", message: "Item not found" };
+
+  await prisma.listItemScore.deleteMany({
+    where: { listItemId, userId: session.user.id },
+  });
+
+  return { status: "cleared" };
 }
 
 // ── createListAndAdd ──────────────────────────────────────────────────────────
