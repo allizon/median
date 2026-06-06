@@ -29,28 +29,71 @@ Design the UX for creating a new list — both personal and collaborative. MDN-1
 
 | Question | Decision |
 |---|---|
-| Is "collaborative" a mode or an outcome? | **Outcome (Option B).** All lists start personal. A list becomes collaborative when the first member is invited. No upfront type selection. |
+| Is "collaborative" a mode or an outcome? | **Outcome.** All lists start personal. A list becomes collaborative when the first member is invited. No upfront type selection. |
+| Invite during creation or after? | **Hybrid.** Creation is always quick (name + visibility only). Immediately after creation, an optional inline nudge appears: "Share this list with someone?" — skippable. This is the natural entry point for the list becoming collaborative without forcing it. |
+| Visibility options | **Private / Public only.** Drop `friends` for Phase 1 — the social graph is deferred. A collaborative list's member-scoped access is handled by membership, not visibility. |
+| Entry points | **One "New list" button** handles both personal and collaborative lists. No separate "New shared list" CTA needed — collaborative emerges from the post-creation nudge. |
 
-## Remaining questions to resolve
+## Implementation plan
 
-**If collaborative, do you invite during creation or after?**
-- Option A (invite during creation): Creation flow includes an optional "Add members" step. Useful if you're creating a list specifically to share with someone.
-- Option B (invite always post-creation): Create the list first, then invite from the list page. Simpler creation, but an extra step before the collaborative experience starts.
-- A hybrid may work: creation is always quick (name only), with an optional inline nudge ("Invite someone to this list?") immediately after creation.
+### Step 1: Schema migrations
 
-**What fields are required at creation?**
-- Name is required (MDN-12 decision).
-- Visibility (private/friends/public) — does this still apply to collaborative lists, or is visibility implicit for collaborative lists?
-- Should a collaborative list have a description field for context?
+- **Rename `ListVote` → `ListItemScore`**, adding a `score Int` (0–4) field. Every row represents one user's score on one list item. No null scores — absence of a row means unscored.
+- **`ListMember`** → add `status` enum (`pending` / `accepted`). Existing members backfilled to `accepted`. Required for the invite flow (MDN-15, MDN-35).
 
-**Entry points:**
-- Widget 3 ("My Lists") "New list" button — already designed in MDN-12.
-- Is there a separate "New shared list" entry point, or does the same button handle both?
-- Should the home dashboard surface a more prominent CTA for creating a shared list, given that collaborative lists are the core Phase 1 use case?
+### Step 2: Server actions
+
+| Action | Notes |
+|--------|-------|
+| `createList(name, visibility)` | Standalone — no `mediaId`. Currently missing; `createListAndAdd()` always requires media. |
+| `setListItemScore(listItemId, score)` | Upsert a `ListItemScore` row. Score of 0 on a collaborative list triggers item removal. |
+| `updateList(id, { name?, visibility })` | Wishlist guard: reject name changes when `isDefaultWishlist`. |
+| `deleteList(id)` | Reject when `isDefaultWishlist`. |
+| `removeListItem(listItemId)` | Owner-scoped for personal lists; open (anyone) for collaborative. |
+
+### Step 3: Create list Sheet
+
+The existing Sheet in `add-to-list-sheet.tsx` creates-and-adds in one transaction and cannot be reused as-is. A dedicated create list Sheet is needed:
+- Fields: name (required) + visibility (Private / Public, default Private)
+- On success: shows post-creation nudge inline — "Share with someone?" with username/link input, skippable
+- Then navigates to `/lists/[id]`
+
+### Step 4: `/lists/[id]` page (MDN-29)
+
+Base personal list shell — destination after creation:
+- Header: name, visibility badge, item count, Edit / Delete controls
+- Item rows: title, type, year, enthusiasm score picker, Remove, Log it
+- Default sort: score descending (unscored items treated as neutral)
+- Empty state: prompt + CTA to catalog search
+
+### Step 5: Enthusiasm score picker component
+
+Shared component used on both personal and collaborative list item rows. Built once, configured by context:
+- On personal lists: scores 0–4, no removal consequence for 0
+- On collaborative lists: scores 0–4, score of 0 triggers item removal with a clear warning before confirming
+
+### Step 6: Post-creation invite nudge
+
+Inline in the Sheet after successful creation. "Invite someone to this list?" with username input and/or shareable link (MDN-35). Skippable — most list creations will skip it. When acted on, transitions the list from personal to collaborative and hands off to the MDN-15 invite flow.
+
+### Implementation order
+
+```
+Schema migration (ListItemScore, ListMember.status)
+  → createList() server action
+    → Create list Sheet
+      → /lists/[id] page (MDN-29)
+        → setListItemScore() server action
+        → Enthusiasm score picker component
+          → Post-creation invite nudge
+            → MDN-15 (full invite flow)
+```
 
 ## Reference
 
 - MDN-12 (personal list creation decisions, now Done)
-- MDN-15 (collaborative list invite, depends on this task's outcome)
-- MDN-29 (personal list implementation)
+- MDN-15 (collaborative list invite — depends on post-creation nudge from this task)
+- MDN-29 (personal list implementation — `/lists/[id]` is its core deliverable)
+- MDN-35 (shareable invite link — surfaced in post-creation nudge)
 - docs/product-vision-phase-1.md
+- docs/user-flows.md
