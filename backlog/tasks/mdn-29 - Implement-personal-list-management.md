@@ -38,10 +38,12 @@ The `/lists/[id]` route does not exist yet (Widget 3 cards already link to it).
 <!-- AC:BEGIN -->
 - [ ] #1 Widget 3 'New list' button opens a create Sheet with name (required) + visibility (default Private), and the new card appears on success
 - [ ] #2 /lists/[id] renders header (name, visibility badge, item count) and item rows (title/type/year/creator)
-- [ ] #3 Each item row has a Remove action (optimistic + undo toast) and a 'Log it' shortcut
-- [ ] #4 Owner-only Edit opens a pre-filled Sheet; saving updates name + visibility
-- [ ] #5 Default Wishlist edit Sheet shows visibility only (no name field) and exposes no Delete affordance; visibility is changeable
-- [ ] #6 Regular lists can be deleted via a destructive-confirm dialog and navigate back to the dashboard
-- [ ] #7 Empty-list state shows a prompt + CTA to catalog search
-- [ ] #8 Server actions createList, updateList, deleteList, removeListItem exist with Wishlist guards enforced server-side
+- [ ] #3 Each item row has a Remove action (optimistic + undo toast), a 'Log it' shortcut, and an enthusiasm score picker (0–4, optional)
+- [ ] #4 Personal list items sort by enthusiasm score descending by default (unscored items treated as neutral)
+- [ ] #5 Owner-only Edit opens a pre-filled Sheet; saving updates name + visibility
+- [ ] #6 Default Wishlist edit Sheet shows visibility only (no name field) and exposes no Delete affordance; visibility is changeable
+- [ ] #7 Regular lists can be deleted via a destructive-confirm dialog and navigate back to the dashboard
+- [ ] #8 Empty-list state shows a prompt + CTA to catalog search
+- [ ] #9 Server actions createList, updateList, deleteList, removeListItem exist with Wishlist guards enforced server-side
+- [ ] #10 Server action setListItemScore(listItemId, score) persists the enthusiasm score for a list item
 <!-- AC:END -->

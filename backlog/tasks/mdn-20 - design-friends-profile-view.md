@@ -4,14 +4,19 @@ title: Design friend's profile view
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 19:28'
+updated_date: '2026-06-06'
 labels:
   - UX
   - friends
+  - deferred
 dependencies:
   - MDN-18
 ordinal: 38000
 ---
+
+## Status note
+
+**Deferred.** Depends on the social graph (MDN-18) which is out of scope for Phase 1.
 
 ## Description
 

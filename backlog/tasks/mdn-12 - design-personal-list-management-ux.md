@@ -4,7 +4,7 @@ title: Design personal list management UX
 status: Done
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-06-01 18:13'
+updated_date: '2026-06-06'
 labels:
   - UX
   - media-lists
@@ -84,6 +84,14 @@ Design the UX for creating and managing personal lists, including visibility set
 ### Empty-list state
 
 - When a list has no items: a centred prompt ("Nothing here yet") + primary CTA **"Find something to add"** linking to catalog search (MDN-6).
+
+## Addendum: enthusiasm scores on personal lists
+
+Personal list items should support an enthusiasm score (0–4), the same scale used on collaborative lists. On a personal list, the score is self-directed — it helps the user prioritize their own queue (high scores float to the top). There is no "No = removal" mechanic on personal lists since the user owns all items; a score of 0 simply means low enthusiasm.
+
+The enthusiasm score picker should be designed consistently with the collaborative list score interaction (MDN-16), since users will encounter both. Scoring is optional — an unscored item is treated as neutral for sort purposes.
+
+The "suggest to shared list" gesture (copy/move an item from personal to shared) is a natural follow-on to scoring: you look at your personal list, see something you scored highly, and want to propose it to a group. This flow should be designed as part of MDN-29 or a dedicated task.
 
 ## Implied server actions (for the downstream implementation task — not built here)
 
