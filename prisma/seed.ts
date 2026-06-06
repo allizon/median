@@ -6,6 +6,32 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+const TV_SHOWS: { title: string; year: number; creator: string }[] = [
+  // Comedy
+  { title: "Abbott Elementary", year: 2021, creator: "Quinta Brunson" },
+  { title: "What We Do in the Shadows", year: 2019, creator: "Jemaine Clement" },
+  { title: "Schitt's Creek", year: 2015, creator: "Dan Levy, Eugene Levy" },
+  { title: "The Bear", year: 2022, creator: "Christopher Storer" },
+  { title: "Reservation Dogs", year: 2021, creator: "Sterlin Harjo, Taika Waititi" },
+  { title: "Only Murders in the Building", year: 2021, creator: "Steve Martin, John Hoffman" },
+  { title: "Hacks", year: 2021, creator: "Lucia Aniello, Paul W. Downs, Jen Statsky" },
+  { title: "Ted Lasso", year: 2020, creator: "Jason Sudeikis, Bill Lawrence" },
+  { title: "Barry", year: 2018, creator: "Alec Berg, Bill Hader" },
+  { title: "Fleabag", year: 2016, creator: "Phoebe Waller-Bridge" },
+
+  // Science Fiction
+  { title: "Severance", year: 2022, creator: "Dan Erickson" },
+  { title: "The Last of Us", year: 2023, creator: "Craig Mazin, Neil Druckmann" },
+  { title: "Andor", year: 2022, creator: "Tony Gilroy" },
+  { title: "Succession", year: 2018, creator: "Jesse Armstrong" },
+  { title: "Dark", year: 2017, creator: "Baran bo Odar, Jantje Friese" },
+  { title: "For All Mankind", year: 2019, creator: "Ronald D. Moore, Matt Wolpert, Ben Nedivi" },
+  { title: "Halt and Catch Fire", year: 2014, creator: "Christopher Cantwell, Christopher C. Rogers" },
+  { title: "Devs", year: 2020, creator: "Alex Garland" },
+  { title: "Pantheon", year: 2022, creator: "Craig Silverstein" },
+  { title: "Silo", year: 2023, creator: "Graham Yost" },
+];
+
 const MOVIES: { title: string; year: number; creator: string }[] = [
   // Action / Blockbuster
   { title: "Mad Max: Fury Road", year: 2015, creator: "George Miller" },
@@ -74,20 +100,21 @@ async function main() {
       where: { title: movie.title, type: "movie" },
       select: { id: true },
     });
-
-    if (existing) {
-      skipped++;
-      continue;
-    }
-
+    if (existing) { skipped++; continue; }
     await prisma.media.create({
-      data: {
-        title: movie.title,
-        year: movie.year,
-        creator: movie.creator,
-        type: "movie",
-        createdById,
-      },
+      data: { title: movie.title, year: movie.year, creator: movie.creator, type: "movie", createdById },
+    });
+    created++;
+  }
+
+  for (const show of TV_SHOWS) {
+    const existing = await prisma.media.findFirst({
+      where: { title: show.title, type: "tv_show" },
+      select: { id: true },
+    });
+    if (existing) { skipped++; continue; }
+    await prisma.media.create({
+      data: { title: show.title, year: show.year, creator: show.creator, type: "tv_show", createdById },
     });
     created++;
   }
