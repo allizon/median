@@ -1,19 +1,24 @@
 ---
 id: MDN-36
 title: Schema migration — ListItemScore and ListMember invite status
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-06-06'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 20:18'
 labels:
   - schema
   - collaborative-lists
 dependencies: []
+modified_files:
+  - prisma/schema.prisma
+  - >-
+    prisma/migrations/20260606000000_listitemscore_listmember_status/migration.sql
 ordinal: 45000
 ---
 
 ## Description
 
+<!-- SECTION:DESCRIPTION:BEGIN -->
 Two schema changes needed before any collaborative list or enthusiasm score features can be built. Neither change breaks existing functionality, but both are prerequisites for MDN-29, MDN-32, MDN-15, and MDN-35.
 
 ## Change 1: Replace `ListVote` with `ListItemScore`
@@ -68,18 +73,19 @@ model ListMember {
 ```
 
 **Migration:** Add `status` column with default `accepted` so all existing `ListMember` rows are backfilled correctly (existing members are already in, not pending).
+<!-- SECTION:DESCRIPTION:END -->
 
-## Acceptance criteria
-
-- [ ] `ListVote` model and table removed from schema and database
-- [ ] `ListItemScore` model created with `listItemId`, `userId`, `score` (Int), `createdAt`, `updatedAt`
-- [ ] `ListItem` relation updated to reference `ListItemScore` instead of `ListVote`
-- [ ] `User` relation updated to reference `ListItemScore` instead of `ListVote`
-- [ ] `ListMemberStatus` enum added (`pending`, `accepted`)
-- [ ] `ListMember.status` field added, defaulting to `pending` in schema
-- [ ] Migration backfills all existing `ListMember` rows to `accepted`
-- [ ] Prisma client regenerated, TypeScript compiles cleanly
-- [ ] Existing list functionality (add to list, wishlist, list display) unaffected
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [x] #1 `ListVote` model and table removed from schema and database
+- [x] #2 `ListItemScore` model created with `listItemId`, `userId`, `score` (Int), `createdAt`, `updatedAt`
+- [x] #3 `ListItem` relation updated to reference `ListItemScore` instead of `ListVote`
+- [x] #4 `User` relation updated to reference `ListItemScore` instead of `ListVote`
+- [x] #5 `ListMemberStatus` enum added (`pending`, `accepted`)
+- [x] #6 `ListMember.status` field added, defaulting to `pending` in schema
+- [x] #7 Migration backfills all existing `ListMember` rows to `accepted`
+- [x] #8 Prisma client regenerated, TypeScript compiles cleanly
+- [x] #9 Existing list functionality (add to list, wishlist, list display) unaffected
 
 ## Reference
 
@@ -87,3 +93,10 @@ model ListMember {
 - MDN-29 (personal list implementation — needs `ListItemScore`)
 - MDN-15 (invite flow — needs `ListMember.status`)
 - MDN-35 (shareable invite link — needs `ListMember.status`)
+<!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Replaced `ListVote` with `ListItemScore` (adds `score Int`, `createdAt`, `updatedAt`). Added `ListMemberStatus` enum (`pending`/`accepted`) and `status`/`updatedAt` fields to `ListMember`. Migration drops `ListVote`, creates `ListItemScore`, backfills existing `ListMember` rows to `accepted`, then resets the column default to `pending`. Prisma client regenerated; TypeScript compiles cleanly.
+<!-- SECTION:FINAL_SUMMARY:END -->
