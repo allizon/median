@@ -8,9 +8,6 @@ export default defineConfig({
     include: ['tests/**/*.test.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'dist'],
     setupFiles: ['./tests/setup.ts'],
-    deps: {
-      inline: [],
-    },
   },
   resolve: {
     alias: {

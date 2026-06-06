@@ -52,5 +52,5 @@
     "typescript": "^5",
     "vitest": "^4.1.7"
   },
-  "packageManager": "pnpm@11.1.2+sha1.ed39d701687311ce9345771c62376f9fe7286694"
+  "packageManager": "pnpm@11.5.2"
 }
