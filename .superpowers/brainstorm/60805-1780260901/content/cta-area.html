@@ -1,0 +1,67 @@
+<h2>Dual CTA area</h2>
+<p class="subtitle">Both primary actions live at the top of the dashboard. Which treatment feels right?</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Two equal buttons</h3>
+      <p>Side by side, same visual weight. Both link to /search — the search page already handles both actions.</p>
+      <div class="mockup" style="margin-top:10px">
+        <div class="mockup-body" style="padding:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:var(--primary);color:white;border-radius:8px;padding:12px;text-align:center;font-size:12px;font-weight:600">
+              + Add to Wishlist
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;font-size:12px;font-weight:600">
+              ✎ Log something
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>One search bar, two intents</h3>
+      <p>A single "Search catalog…" input at the top. Below it, two smaller action links clarify what the user can do once they find something.</p>
+      <div class="mockup" style="margin-top:10px">
+        <div class="mockup-body" style="padding:12px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:6px">
+              <div class="mock-input" style="flex:1;font-size:11px">Search catalog…</div>
+              <div class="mock-button" style="font-size:11px">Search</div>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center">
+              <span style="font-size:11px;color:var(--muted-foreground)">Add to Wishlist · Log something</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Primary + secondary hierarchy</h3>
+      <p>"Add to Wishlist" is the primary (filled) button. "Log something" is secondary (outline). Signals that wishlist is the more common first action.</p>
+      <div class="mockup" style="margin-top:10px">
+        <div class="mockup-body" style="padding:12px">
+          <div style="display:flex;gap:8px;justify-content:center;align-items:center">
+            <div style="background:var(--primary);color:white;border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600">
+              + Add to Wishlist
+            </div>
+            <div style="border:1px solid var(--border);background:var(--card);border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600">
+              ✎ Log something
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
