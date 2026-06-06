@@ -4,6 +4,10 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { updateFeaturedListsAction } from "./actions";
 
+type ListItem = {
+  media: { id: string; title: string; type: string };
+};
+
 type List = {
   id: string;
   name: string;
@@ -11,6 +15,7 @@ type List = {
   featuredOnProfile: boolean;
   profilePosition: number | null;
   _count: { items: number };
+  items: ListItem[];
 };
 
 export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[]; ownerId: string; username: string }) {
@@ -79,10 +84,21 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
               <a
                 key={list.id}
                 href={`/lists/${list.id}`}
-                className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-1"
+                className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-2"
               >
-                <p className="font-medium text-sm">{list.name}</p>
-                <p className="text-xs text-muted-foreground">{list._count.items} items</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium text-sm">{list.name}</p>
+                  <span className="text-xs text-muted-foreground shrink-0">{list._count.items} items</span>
+                </div>
+                {list.items.length > 0 && (
+                  <ul className="space-y-0.5">
+                    {list.items.map((item) => (
+                      <li key={item.media.id} className="text-xs text-muted-foreground truncate">
+                        {item.media.title}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </a>
             ))}
           </div>

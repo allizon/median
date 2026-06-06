@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { FeaturedListsEditor } from "./FeaturedListsEditor";
 import { AddMediaButton } from "./AddMediaButton";
+import { NewListButton } from "@/components/new-list-button";
 
 type ViewerRole = "owner" | "friend" | "stranger" | "logged-out";
 
@@ -121,9 +122,9 @@ export default async function ProfilePage({
             profilePosition: true,
             _count: { select: { items: true } },
             items: {
-              take: 3,
+              take: 5,
               orderBy: { addedAt: "asc" },
-              select: { media: { select: { title: true } } },
+              select: { media: { select: { id: true, title: true, type: true } } },
             },
           },
         })
@@ -148,6 +149,11 @@ export default async function ProfilePage({
             featuredOnProfile: true,
             profilePosition: true,
             _count: { select: { items: true } },
+            items: {
+              take: 5,
+              orderBy: { addedAt: "asc" },
+              select: { media: { select: { id: true, title: true, type: true } } },
+            },
           },
         })
       : null;
@@ -182,6 +188,7 @@ export default async function ProfilePage({
           {role === "owner" && (
             <div className="flex items-center gap-3">
               <AddMediaButton />
+              <NewListButton className="text-sm" />
               <Link
                 href="/settings"
                 className="text-sm text-primary underline-offset-4 hover:underline"
@@ -216,9 +223,6 @@ export default async function ProfilePage({
               {countByType("tv_show") > 0 && (
                 <span><strong>{countByType("tv_show")}</strong> TV shows</span>
               )}
-              {countByType("book") > 0 && (
-                <span><strong>{countByType("book")}</strong> books</span>
-              )}
               {stats.avgRating !== null && stats.avgRating !== undefined && (
                 <span>
                   avg rating <strong>{(stats.avgRating / 2).toFixed(1)}★</strong>
@@ -252,16 +256,22 @@ export default async function ProfilePage({
                     <Link
                       key={list.id}
                       href={`/lists/${list.id}`}
-                      className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-1"
+                      className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-2"
                     >
-                      <p className="font-medium text-sm">{list.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {list._count.items} items
-                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-sm">{list.name}</p>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {list._count.items} items
+                        </span>
+                      </div>
                       {list.items.length > 0 && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {list.items.map((i) => i.media.title).join(", ")}
-                        </p>
+                        <ul className="space-y-0.5">
+                          {list.items.map((item) => (
+                            <li key={item.media.id} className="text-xs text-muted-foreground truncate">
+                              {item.media.title}
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </Link>
                   ))}
