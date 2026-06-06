@@ -4,13 +4,18 @@ title: Design public list discovery UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 19:28'
+updated_date: '2026-06-06'
 labels:
   - UX
   - friends
+  - deferred
 dependencies: []
 ordinal: 39000
 ---
+
+## Status note
+
+**Deferred.** Public discovery is a later-phase concern. Phase 1 serves known small groups, not public strangers.
 
 ## Description
 

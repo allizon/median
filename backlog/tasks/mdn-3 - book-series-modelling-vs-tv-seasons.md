@@ -4,11 +4,16 @@ title: Book series - analogy to TV seasons worth exploring
 status: To Do
 assignee: []
 created_date: ''
-updated_date: '2026-05-31 19:28'
-labels: []
+updated_date: '2026-06-06'
+labels:
+  - deferred
 dependencies: []
 ordinal: 23000
 ---
+
+## Status note
+
+**Deferred.** Books are out of scope for Phase 1. The app will focus on movies and TV first. Revisit this question when books are added (Phase 2+).
 
 ## Question
 

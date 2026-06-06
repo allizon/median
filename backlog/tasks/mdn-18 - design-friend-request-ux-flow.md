@@ -4,13 +4,18 @@ title: Design friend request UX flow
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 19:28'
+updated_date: '2026-06-06'
 labels:
   - UX
   - friends
+  - deferred
 dependencies: []
 ordinal: 36000
 ---
+
+## Status note
+
+**Deferred.** The social graph (friends, public profiles, discovery) is a later phase. Phase 1 focuses on the core loop: collaborative lists, enthusiasm scores, media logging, and in-app notifications for small known groups.
 
 ## Description
 

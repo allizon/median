@@ -4,13 +4,18 @@ title: Design user search UX
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 19:28'
+updated_date: '2026-06-06'
 labels:
   - UX
   - friends
+  - deferred
 dependencies: []
 ordinal: 37000
 ---
+
+## Status note
+
+**Deferred.** Part of the social graph feature set, which is out of scope for Phase 1. Note: a lightweight "invite by username" surface will still be needed for collaborative list invites (MDN-15), but a full user search experience is a later-phase concern.
 
 ## Description
 
