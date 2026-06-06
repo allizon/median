@@ -1,16 +1,16 @@
 ---
 id: MDN-21
 title: Design public list discovery UX
-status: To Do
+status: Waiting
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 22:52'
 labels:
   - UX
   - friends
   - deferred
 dependencies: []
-ordinal: 39000
+ordinal: 4000
 ---
 
 ## Status note

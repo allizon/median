@@ -1,14 +1,14 @@
 ---
 id: MDN-3
 title: Book series - analogy to TV seasons worth exploring
-status: To Do
+status: Waiting
 assignee: []
 created_date: ''
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 22:52'
 labels:
   - deferred
 dependencies: []
-ordinal: 23000
+ordinal: 1000
 ---
 
 ## Status note

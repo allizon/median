@@ -1,16 +1,16 @@
 ---
 id: MDN-18
 title: Design friend request UX flow
-status: To Do
+status: Waiting
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 22:52'
 labels:
   - UX
   - friends
   - deferred
 dependencies: []
-ordinal: 36000
+ordinal: 2000
 ---
 
 ## Status note

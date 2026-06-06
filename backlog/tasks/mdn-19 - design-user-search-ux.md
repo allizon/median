@@ -1,16 +1,16 @@
 ---
 id: MDN-19
 title: Design user search UX
-status: To Do
+status: Waiting
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 22:52'
 labels:
   - UX
   - friends
   - deferred
 dependencies: []
-ordinal: 37000
+ordinal: 3000
 ---
 
 ## Status note
