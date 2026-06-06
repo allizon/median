@@ -25,12 +25,13 @@ Design the UX for creating a new list — both personal and collaborative. MDN-1
 - The distinction between a personal list and a collaborative list may not be a type chosen upfront — it may emerge naturally (a personal list becomes collaborative when you invite someone).
 - The default Wishlist already exists for every user and cannot be deleted or renamed. Any new list created by the user is either personal or collaborative.
 
-## Key questions to resolve
+## Decisions
 
-**Is "collaborative" a mode or an outcome?**
-- Option A: The user explicitly chooses "Personal" vs. "Collaborative" at creation time. Different flows, different affordances from the start.
-- Option B: All lists start personal. A list becomes collaborative when the first member is invited. No upfront distinction — the type emerges from usage.
-- Option B feels more natural (you don't know upfront if a list will stay solo), but Option A may be clearer for new users who know they want a shared list immediately.
+| Question | Decision |
+|---|---|
+| Is "collaborative" a mode or an outcome? | **Outcome (Option B).** All lists start personal. A list becomes collaborative when the first member is invited. No upfront type selection. |
+
+## Remaining questions to resolve
 
 **If collaborative, do you invite during creation or after?**
 - Option A (invite during creation): Creation flow includes an optional "Add members" step. Useful if you're creating a list specifically to share with someone.
