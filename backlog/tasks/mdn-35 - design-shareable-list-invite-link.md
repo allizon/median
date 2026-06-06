@@ -26,10 +26,15 @@ This is the most natural onboarding path for the initial use case (e.g. one part
 
 Invite links should be scoped to a specific list, not a general "follow me" link.
 
+## Decisions
+
+| Question | Decision |
+|---|---|
+| Single-use or reusable? | **Reusable.** One link per list, anyone with it can join — but each person must create their own account. No anonymous or shared-identity joining. Personalized per-invitee links (encoding both sender and recipient) are a later-phase feature. |
+
 ## Questions to resolve
 
 - How does the owner generate the link? (Button on the list page, in list settings, alongside the username invite input)
-- Is the link single-use or reusable? Does it expire?
 - What does the recipient see when they follow the link while logged out? (Landing page with list name + owner + "Join this list" CTA, sign up / log in options)
 - What does the recipient see when they follow the link while already logged in? (Direct accept/decline prompt)
 - After signing up via invite link, where does the user land? (Directly on the shared list — not a blank dashboard)
