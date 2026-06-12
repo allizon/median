@@ -1,18 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Modal, ModalContent } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { getUserLists, addToList, createListAndAdd, type UserList } from "@/lib/actions/list";
 import { toastManager } from "@/components/ui/toaster";
 
-interface AddToListSheetProps {
+interface AddToListModalProps {
   mediaId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function AddToListSheet({ mediaId, open, onOpenChange }: AddToListSheetProps) {
+export function AddToListModal({ mediaId, open, onOpenChange }: AddToListModalProps) {
   const [lists, setLists] = React.useState<UserList[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [adding, setAdding] = React.useState<string | null>(null); // listId being added
@@ -20,7 +20,7 @@ export function AddToListSheet({ mediaId, open, onOpenChange }: AddToListSheetPr
   const [newListName, setNewListName] = React.useState("");
   const [creating, setCreating] = React.useState(false);
 
-  // Fetch lists when sheet opens
+  // Fetch lists when modal opens
   React.useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -64,8 +64,8 @@ export function AddToListSheet({ mediaId, open, onOpenChange }: AddToListSheetPr
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title="Add to list" description="Choose a list to add this item to">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent title="Add to list" description="Choose a list to add this item to">
         <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
           {loading ? (
             <p className="text-sm text-muted-foreground px-1 py-4">Loading lists…</p>
@@ -140,7 +140,7 @@ export function AddToListSheet({ mediaId, open, onOpenChange }: AddToListSheetPr
             </>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

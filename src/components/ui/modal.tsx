@@ -39,7 +39,7 @@ function ModalContent({ title, description, children, className }: ModalContentP
       {/* Panel */}
       <Dialog.Popup
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card shadow-xl outline-none",
+          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card shadow-xl outline-none",
           "max-h-[85vh] flex flex-col",
           "data-[starting-style]:opacity-0 data-[starting-style]:scale-95",
           "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",

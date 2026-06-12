@@ -9,7 +9,7 @@ import { Modal, ModalContent } from "@/components/ui/modal";
 import { ListModal } from "@/components/list-modal";
 import { toastManager } from "@/components/ui/toaster";
 import { removeListItem, deleteList, setListItemScore, clearListItemScore } from "@/lib/actions/list";
-import { AddToListSearchSheet } from "@/components/add-to-list-search-sheet";
+import { AddToListSearchModal } from "@/components/add-to-list-search-modal";
 
 const VISIBILITY_LABELS: Record<ListVisibility, string> = {
   private: "Private",
@@ -252,8 +252,8 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
         </ul>
       )}
 
-      {/* Add items Sheet */}
-      <AddToListSearchSheet
+      {/* Add items modal */}
+      <AddToListSearchModal
         listId={list.id}
         listName={list.name}
         existingMediaIds={new Set(items.map((i) => i.media.id))}

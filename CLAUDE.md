@@ -2,7 +2,7 @@
 
 ## Issue Tracking
 
-All issues are stored as Github issues. See <https://github.com/allizon/median/issues>.
+All issues are stored as Github issues. When creating new issues, use the prefix tag `MDN` and the next available issue number. See <https://github.com/allizon/median/issues>.
 
 ## Testing with Vitest
 

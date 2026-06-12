@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Modal, ModalContent } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { addToList } from "@/lib/actions/list";
 import { searchCatalog, type CatalogResult } from "@/lib/actions/media";
@@ -12,7 +12,7 @@ const TYPE_LABELS: Record<string, string> = {
   tv_show: "TV Show",
 };
 
-interface AddToListSearchSheetProps {
+interface AddToListSearchModalProps {
   listId: string;
   listName: string;
   existingMediaIds: Set<string>;
@@ -21,14 +21,14 @@ interface AddToListSearchSheetProps {
   onAdded: () => void;
 }
 
-export function AddToListSearchSheet({
+export function AddToListSearchModal({
   listId,
   listName,
   existingMediaIds,
   open,
   onOpenChange,
   onAdded,
-}: AddToListSearchSheetProps) {
+}: AddToListSearchModalProps) {
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<CatalogResult[]>([]);
   const [searching, setSearching] = React.useState(false);
@@ -79,8 +79,8 @@ export function AddToListSearchSheet({
   const isAdded = (mediaId: string) => added.has(mediaId) || existingMediaIds.has(mediaId);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title={`Add to ${listName}`} description="Search the catalog and add items to this list">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent title={`Add to ${listName}`} description="Search the catalog and add items to this list">
         <div className="flex flex-col gap-4 h-full">
           <input
             autoFocus
@@ -145,7 +145,7 @@ export function AddToListSearchSheet({
             )}
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AddMediaSheet } from "@/components/add-media-sheet";
+import { AddMediaModal } from "@/components/add-media-modal";
 
 export function AddMediaButton() {
   const [open, setOpen] = useState(false);
@@ -14,7 +14,7 @@ export function AddMediaButton() {
       >
         + Add Media
       </button>
-      <AddMediaSheet open={open} onOpenChange={setOpen} />
+      <AddMediaModal open={open} onOpenChange={setOpen} />
     </>
   );
 }
