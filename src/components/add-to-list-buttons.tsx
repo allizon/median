@@ -3,7 +3,7 @@
 import * as React from "react";
 import { addToWishlist } from "@/lib/actions/list";
 import { toastManager } from "@/components/ui/toaster";
-import { AddToListSheet } from "@/components/add-to-list-sheet";
+import { AddToListModal } from "@/components/add-to-list-modal";
 import { cn } from "@/lib/utils";
 
 interface AddToListButtonsProps {
@@ -82,7 +82,7 @@ export function AddToListButtons({ mediaId, inWishlist: initialInWishlist }: Add
         </button>
       </div>
 
-      <AddToListSheet mediaId={mediaId} open={sheetOpen} onOpenChange={setSheetOpen} />
+      <AddToListModal mediaId={mediaId} open={sheetOpen} onOpenChange={setSheetOpen} />
     </>
   );
 }

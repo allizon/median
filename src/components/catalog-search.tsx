@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { MediaType } from "@prisma/client";
-import { AddMediaSheet } from "@/components/add-media-sheet";
+import { AddMediaModal } from "@/components/add-media-modal";
 import { AddToListButtons } from "@/components/add-to-list-buttons";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -172,9 +172,9 @@ export function CatalogSearch({
         </div>
       )}
 
-      {/* Add media slide-over */}
+      {/* Add media modal */}
       {isAuthenticated && (
-        <AddMediaSheet
+        <AddMediaModal
           open={addSheetOpen}
           onOpenChange={setAddSheetOpen}
           initialTitle={initialQuery}

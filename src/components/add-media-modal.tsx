@@ -8,7 +8,7 @@ import {
   type DuplicateCandidate,
   type CreateMediaInput,
 } from "@/lib/actions/media";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Modal, ModalContent } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -19,14 +19,14 @@ interface SeasonRow {
   title: string;
 }
 
-interface AddMediaSheetProps {
+interface AddMediaModalProps {
   /** Controlled open state */
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Pre-fill the title field (e.g. from the search query) */
   initialTitle?: string;
   /**
-   * When set, after the item is created the sheet will fire this callback
+   * When set, after the item is created the modal will fire this callback
    * instead of navigating to the new item's page.
    * Use for "add to list" intent preservation (MDN-25).
    */
@@ -47,12 +47,12 @@ function creatorLabel(type: MediaType): string {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function AddMediaSheet({
+export function AddMediaModal({
   open,
   onOpenChange,
   initialTitle = "",
   onCreated,
-}: AddMediaSheetProps) {
+}: AddMediaModalProps) {
   const router = useRouter();
 
   const [title, setTitle] = React.useState(initialTitle);
@@ -71,7 +71,7 @@ export function AddMediaSheet({
     setTitle(initialTitle);
   }, [initialTitle]);
 
-  // Reset form state when sheet opens
+  // Reset form state when modal opens
   React.useEffect(() => {
     if (open) {
       setTitle(initialTitle);
@@ -149,8 +149,8 @@ export function AddMediaSheet({
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title="Add new item" description="Add a movie or TV show to the catalog">
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent title="Add new item" description="Add a movie or TV show to the catalog">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -400,7 +400,7 @@ export function AddMediaSheet({
             </Button>
           </div>
         </form>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }
