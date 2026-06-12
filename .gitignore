@@ -53,3 +53,5 @@ next-env.d.ts
 
 *.pyc
 tsconfig.tsbuildinfo
+
+zz_backlog
