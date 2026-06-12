@@ -3,10 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Dialog } from "@base-ui/react/dialog";
 import type { ListVisibility } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { ListSheet } from "@/components/list-sheet";
+import { Modal, ModalContent } from "@/components/ui/modal";
+import { ListModal } from "@/components/list-modal";
 import { toastManager } from "@/components/ui/toaster";
 import { removeListItem, deleteList, setListItemScore, clearListItemScore } from "@/lib/actions/list";
 import { AddToListSearchSheet } from "@/components/add-to-list-search-sheet";
@@ -262,8 +262,8 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
         onAdded={() => router.refresh()}
       />
 
-      {/* Edit Sheet */}
-      <ListSheet
+      {/* Edit modal */}
+      <ListModal
         open={editOpen}
         onOpenChange={setEditOpen}
         list={list}
@@ -273,35 +273,27 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
         }}
       />
 
-      {/* Delete confirm dialog */}
-      <Dialog.Root open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/50 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0 transition-opacity duration-150" />
-          <Dialog.Popup className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-card rounded-xl border border-border shadow-xl max-w-sm w-full p-6 space-y-4">
-              <Dialog.Title className="text-base font-semibold">Delete "{list.name}"?</Dialog.Title>
-              <Dialog.Description className="text-sm text-muted-foreground">
-                This will permanently delete the list and all its items. This cannot be undone.
-              </Dialog.Description>
-              <div className="flex justify-end gap-2">
-                <Dialog.Close
-                  className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-3 h-8 text-sm font-medium hover:bg-muted transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Cancel
-                </Dialog.Close>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  disabled={deleting}
-                  onClick={handleDelete}
-                >
-                  {deleting ? "Deleting…" : "Delete list"}
-                </Button>
-              </div>
-            </div>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
+      {/* Delete confirm modal */}
+      <Modal open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <ModalContent
+          title={`Delete "${list.name}"?`}
+          description="This will permanently delete the list and all its items. This cannot be undone."
+        >
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={deleting}
+              onClick={handleDelete}
+            >
+              {deleting ? "Deleting…" : "Delete list"}
+            </Button>
+          </div>
+        </ModalContent>
+      </Modal>
     </main>
   );
 }
