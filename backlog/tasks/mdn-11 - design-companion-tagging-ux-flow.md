@@ -1,16 +1,17 @@
 ---
 id: MDN-11
 title: Design companion tagging UX flow
-status: To Do
+status: Waiting
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 19:28'
+updated_date: '2026-06-06 23:01'
 labels:
   - UX
   - media-logging
+  - deferred
 dependencies:
   - MDN-9
-ordinal: 29000
+ordinal: 6000
 ---
 
 ## Description

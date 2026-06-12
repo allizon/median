@@ -4,13 +4,14 @@ title: Design shareable list invite link flow
 status: To Do
 assignee: []
 created_date: '2026-06-06'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 22:59'
 labels:
   - UX
   - collaborative-lists
 dependencies:
   - MDN-15
   - MDN-33
+priority: low
 ordinal: 44000
 ---
 

@@ -4,13 +4,14 @@ title: 'Browse Catalog: assign enthusiasm score immediately when adding to a lis
 status: To Do
 assignee: []
 created_date: '2026-06-06 22:51'
+updated_date: '2026-06-06 22:58'
 labels:
   - browse-catalog
   - ux
   - enthusiasm-score
 dependencies:
   - MDN-41
-priority: medium
+priority: high
 ordinal: 67000
 ---
 

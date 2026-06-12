@@ -4,12 +4,13 @@ title: 'Browse Catalog: replace "Lists" button with inline add-to-list popover'
 status: To Do
 assignee: []
 created_date: '2026-06-06 22:50'
+updated_date: '2026-06-06 22:58'
 labels:
   - browse-catalog
   - ui
   - ux
 dependencies: []
-priority: medium
+priority: high
 ordinal: 66000
 ---
 

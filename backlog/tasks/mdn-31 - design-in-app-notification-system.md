@@ -4,7 +4,7 @@ title: Design in-app notification system
 status: To Do
 assignee: []
 created_date: '2026-06-06'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 23:00'
 labels:
   - UX
   - notifications
@@ -12,6 +12,7 @@ labels:
 dependencies:
   - MDN-15
   - MDN-16
+priority: low
 ordinal: 40000
 ---
 

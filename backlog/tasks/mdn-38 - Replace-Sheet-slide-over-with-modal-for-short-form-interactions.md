@@ -4,12 +4,13 @@ title: Replace Sheet/slide-over with modal for short-form interactions
 status: To Do
 assignee: []
 created_date: '2026-06-06 22:50'
+updated_date: '2026-06-06 22:59'
 labels:
   - ui
   - ux
   - refactor
 dependencies: []
-priority: medium
+priority: high
 ordinal: 63000
 ---
 

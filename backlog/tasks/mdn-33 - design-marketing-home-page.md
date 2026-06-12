@@ -4,10 +4,11 @@ title: Design marketing/landing home page
 status: To Do
 assignee: []
 created_date: '2026-06-06'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 23:00'
 labels:
   - UX
 dependencies: []
+priority: medium
 ordinal: 42000
 ---
 

@@ -4,12 +4,13 @@ title: Design dashboard UX (including empty states)
 status: To Do
 assignee: []
 created_date: '2026-06-06'
-updated_date: '2026-06-06'
+updated_date: '2026-06-06 23:00'
 labels:
   - UX
 dependencies:
   - MDN-32
   - MDN-9
+priority: medium
 ordinal: 43000
 ---
 

@@ -4,11 +4,12 @@ title: Type-scoped media item URLs
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31'
+updated_date: '2026-06-06 23:01'
 labels:
   - routing
   - media
 dependencies: []
+priority: low
 ordinal: 27000
 ---
 

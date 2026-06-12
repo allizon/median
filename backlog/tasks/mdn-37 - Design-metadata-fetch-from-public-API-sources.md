@@ -4,12 +4,13 @@ title: Design metadata fetch from public API sources
 status: To Do
 assignee: []
 created_date: '2026-06-06 22:50'
+updated_date: '2026-06-06 22:59'
 labels:
   - design
   - catalog
   - api-integration
 dependencies: []
-priority: medium
+priority: high
 ordinal: 62000
 ---
 

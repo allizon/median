@@ -4,11 +4,12 @@ title: 'Browse Catalog: add clear/reset button to search input'
 status: To Do
 assignee: []
 created_date: '2026-06-06 22:50'
+updated_date: '2026-06-06 22:58'
 labels:
   - ui
   - browse-catalog
 dependencies: []
-priority: low
+priority: medium
 ordinal: 64000
 ---
 
