@@ -1,23 +1,11 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { getProxyRedirect } from "@/lib/auth-routing";
 
 export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const isAuthRoute =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/signup");
-  const isPublicRoute =
-    isAuthRoute ||
-    req.nextUrl.pathname.startsWith("/api/auth") ||
-    req.nextUrl.pathname.startsWith("/@") ||
-    req.nextUrl.pathname.startsWith("/profile/");
-
-  if (!isLoggedIn && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/login", req.nextUrl));
-  }
-
-  if (isLoggedIn && isAuthRoute) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
+  const redirectPath = getProxyRedirect(req.auth, req.nextUrl.pathname);
+  if (redirectPath) {
+    return NextResponse.redirect(new URL(redirectPath, req.nextUrl));
   }
 });
 
