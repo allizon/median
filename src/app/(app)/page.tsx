@@ -5,10 +5,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NewListButton } from "@/components/new-list-button";
 import { WishlistWidget, type WishlistItem } from "@/components/wishlist-widget";
+import { getRandomGreeting } from "@/lib/greetings";
 
 export default async function HomePage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const userName = session!.user!.name || "there";
 
   const [lists, wishlistItems] = await Promise.all([
     prisma.list.findMany({
@@ -47,6 +49,25 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8 space-y-6">
+      {/* Welcome greeting */}
+      <p className="text-lg md:text-2xl font-semibold text-foreground text-center">
+        {(() => {
+          const greeting = getRandomGreeting();
+          return (
+            <>
+              {greeting.before}
+              <Link
+                href={`/profile/${session!.user!.username}`}
+                className="hover:text-primary transition-colors underline underline-offset-2"
+              >
+                {userName}
+              </Link>
+              {greeting.after}
+            </>
+          );
+        })()}
+      </p>
+
       {/* CTAs */}
       <div className="grid grid-cols-2 gap-3">
         <Link
