@@ -2,15 +2,15 @@
 
 import * as React from "react";
 import type { ListVisibility } from "@prisma/client";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Modal, ModalContent } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { createList, updateList } from "@/lib/actions/list";
 import { toastManager } from "@/components/ui/toaster";
 
-interface ListSheetProps {
+interface ListModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** When provided, the sheet is in edit mode */
+  /** When provided, the modal is in edit mode */
   list?: {
     id: string;
     name: string;
@@ -20,7 +20,7 @@ interface ListSheetProps {
   onSuccess?: (id: string) => void;
 }
 
-export function ListSheet({ open, onOpenChange, list, onSuccess }: ListSheetProps) {
+export function ListModal({ open, onOpenChange, list, onSuccess }: ListModalProps) {
   const isEdit = !!list;
   const isWishlist = list?.isDefaultWishlist ?? false;
 
@@ -75,8 +75,8 @@ export function ListSheet({ open, onOpenChange, list, onSuccess }: ListSheetProp
   const canSubmit = isWishlist ? true : name.trim().length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent title={title}>
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent title={title}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {!isWishlist && (
             <div className="flex flex-col gap-1.5">
@@ -127,7 +127,7 @@ export function ListSheet({ open, onOpenChange, list, onSuccess }: ListSheetProp
             {saving ? "Saving…" : isEdit ? "Save changes" : "Create list"}
           </Button>
         </form>
-      </SheetContent>
-    </Sheet>
+      </ModalContent>
+    </Modal>
   );
 }

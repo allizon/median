@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ListSheet } from "@/components/list-sheet";
+import { ListModal } from "@/components/list-modal";
 
 interface NewListButtonProps {
   className?: string;
@@ -25,7 +25,7 @@ export function NewListButton({ className }: NewListButtonProps) {
       >
         + New list
       </button>
-      <ListSheet
+      <ListModal
         open={open}
         onOpenChange={setOpen}
         onSuccess={(id) => router.push(`/lists/${id}`)}
