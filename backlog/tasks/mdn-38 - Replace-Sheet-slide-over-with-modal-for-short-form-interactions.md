@@ -4,7 +4,7 @@ title: Replace Sheet/slide-over with modal for short-form interactions
 status: To Do
 assignee: []
 created_date: '2026-06-06 22:50'
-updated_date: '2026-06-06 22:59'
+updated_date: '2026-06-12 14:15'
 labels:
   - ui
   - ux
@@ -26,10 +26,7 @@ Replace Sheet usage with a modal for:
 - Edit list (currently `ListSheet` in edit mode)
 - Any future short-form confirmations
 
-Keep Sheet for:
-- `AddToListSheet` (list picker with scrollable list — benefits from the full panel)
-- `AddMediaSheet` (multi-step form with seasons — benefits from the full panel)
-- `AddToListSearchSheet` (search + results list)
+> **Update:** The "keep as Sheet" exceptions originally listed here (`AddToListSheet`, `AddMediaSheet`, `AddToListSearchSheet`) are superseded — the direction is now that *all* side sheets become centred modals, including ones with longer/scrollable content. See the subtask "Convert AddToListSearchSheet, AddMediaSheet, and AddToListSheet to centered modals" for that follow-up work.
 
 ## Implementation notes
 

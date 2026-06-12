@@ -4,13 +4,13 @@ title: Design TV show diary entry UX flow
 status: To Do
 assignee: []
 created_date: '2026-05-31'
-updated_date: '2026-05-31 19:28'
+updated_date: '2026-06-12 14:07'
 labels:
   - UX
   - media-logging
 dependencies:
   - MDN-9
-ordinal: 28000
+ordinal: 29000
 ---
 
 ## Description
