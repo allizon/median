@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Nav } from "@/components/nav";
+import { isValidSession } from "@/lib/auth-routing";
 
 export default async function AppLayout({
   children,
@@ -8,8 +9,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (!session.user.username) redirect("/login");  // orphaned session guard
+  if (!isValidSession(session)) redirect("/login"); // also guards orphaned sessions
 
   return (
     <>
