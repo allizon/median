@@ -1,9 +1,13 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { MediaType } from "@prisma/client";
+import { searchTmdb as fetchFromTmdb, type TmdbResult } from "@/lib/tmdb";
+
+export type { TmdbResult } from "@/lib/tmdb";
 
 // ── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -21,6 +25,8 @@ const createMediaSchema = z.object({
   ),
   creator: z.string().max(500).optional(),
   seasons: z.array(seasonRowSchema).optional(),
+  externalId: z.string().optional(),
+  posterPath: z.string().optional(),
 });
 
 // Raw form values (year is a string from the input element)
@@ -30,6 +36,8 @@ export type CreateMediaInput = {
   year?: string | number;
   creator?: string;
   seasons?: { number: number; title?: string }[];
+  externalId?: string;
+  posterPath?: string;
 };
 
 export type DuplicateCandidate = {
@@ -78,7 +86,7 @@ export async function createMedia(
     return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const { title, type, year, creator, seasons } = parsed.data;
+  const { title, type, year, creator, seasons, externalId, posterPath } = parsed.data;
 
   // Duplicate check unless user explicitly forced creation
   if (!force) {
@@ -94,7 +102,8 @@ export async function createMedia(
       type,
       year: year,
       creator: creator || null,
-      externalId: null,
+      externalId: externalId ?? null,
+      posterPath: posterPath ?? null,
       createdById: session.user.id,
     },
   });
@@ -110,7 +119,33 @@ export async function createMedia(
     });
   }
 
+  revalidatePath("/search");
   return { status: "created", mediaId: media.id };
+}
+
+// ── TMDB search ───────────────────────────────────────────────────────────────
+
+export type TmdbSearchResult =
+  | { status: "ok"; results: TmdbResult[] }
+  | { status: "empty" }
+  | { status: "error"; message: string };
+
+export async function searchTmdb(query: string): Promise<TmdbSearchResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { status: "error", message: "Not authenticated" };
+  }
+
+  const q = query.trim();
+  if (!q) return { status: "empty" };
+
+  try {
+    const results = await fetchFromTmdb(q);
+    if (results.length === 0) return { status: "empty" };
+    return { status: "ok", results };
+  } catch {
+    return { status: "error", message: "Search failed. Please try again." };
+  }
 }
 
 // ── searchCatalog ─────────────────────────────────────────────────────────────
