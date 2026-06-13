@@ -74,7 +74,7 @@ export default async function HomePage() {
           href="/search"
           className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full justify-center")}
         >
-          + Add to Wishlist
+          + Add to Watchlist
         </Link>
         <Link
           href="/search"
@@ -95,7 +95,7 @@ export default async function HomePage() {
               href={`/lists/${wishlist.id}`}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Manage wishlist →
+              Manage watchlist →
             </Link>
           )}
         </div>

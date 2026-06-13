@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { updateFeaturedListsAction } from "./actions";
+import { listDisplayName } from "@/lib/labels";
 
 type ListItem = {
   media: { id: string; title: string; type: string };
@@ -11,6 +12,7 @@ type ListItem = {
 type List = {
   id: string;
   name: string;
+  isDefaultWishlist: boolean;
   visibility: string;
   featuredOnProfile: boolean;
   profilePosition: number | null;
@@ -87,7 +89,7 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
                 className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-2"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium text-sm">{list.name}</p>
+                  <p className="font-medium text-sm">{listDisplayName(list)}</p>
                   <span className="text-xs text-muted-foreground shrink-0">{list._count.items} items</span>
                 </div>
                 {list.items.length > 0 && (
@@ -140,7 +142,7 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
               onChange={() => toggle(list)}
               className="rounded"
             />
-            <span className="text-sm font-medium flex-1">{list.name}</span>
+            <span className="text-sm font-medium flex-1">{listDisplayName(list)}</span>
             <span className="text-xs text-muted-foreground">{list.visibility} · {list._count.items} items</span>
           </label>
         ))}
@@ -158,7 +160,7 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
               className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 cursor-grab select-none"
             >
               <span className="text-muted-foreground">⠿</span>
-              <span className="text-sm">{list.name}</span>
+              <span className="text-sm">{listDisplayName(list)}</span>
             </div>
           ))}
         </div>

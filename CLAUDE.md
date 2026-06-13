@@ -73,6 +73,15 @@ The list detail page and wishlist widget use a deferred-delete pattern: hide ite
 
 Lists use `private` / `public` only (the `friends` enum value exists in the schema but is deferred — do not expose it in UI).
 
+### Wishlist → Watchlist UI alias
+
+The default "Wishlist" list is presented to users as **"Watchlist"**. This is a UI-only rename — the codebase and database keep the original "Wishlist" terminology (the `isDefaultWishlist` column, the seeded list name `"Wishlist"`, `addToWishlist`, `inWishlist`, `WishlistWidget`, etc.). Do **not** rename these identifiers.
+
+When showing the term to users, use "Watchlist":
+
+- Static UI strings are written as literal "Watchlist".
+- The default list's stored name (`"Wishlist"`) is aliased at display time via `listDisplayName(list)` / `WISHLIST_LABEL` in `src/lib/labels.ts`. Use the helper anywhere a list name (that could be the default wishlist) is rendered, including server-action return values like `listName` that flow into toasts.
+
 ### Books / media types
 
 Books are deferred to a later phase. Only `movie` and `tv_show` are exposed in the UI. The `book` enum value exists in the DB but must not appear in search filters, add-media forms, or type label maps.

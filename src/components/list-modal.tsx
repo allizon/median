@@ -68,7 +68,7 @@ export function ListModal({ open, onOpenChange, list, onSuccess }: ListModalProp
 
   const title = isEdit
     ? isWishlist
-      ? "Edit Wishlist"
+      ? "Edit Watchlist"
       : "Edit list"
     : "New list";
 
