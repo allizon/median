@@ -66,7 +66,7 @@ export function WishlistWidget({ initialItems, wishlistId }: WishlistWidgetProps
   if (items.length === 0) {
     return (
       <p className="text-sm text-muted-foreground py-2">
-        Nothing in your Wishlist yet.{" "}
+        Nothing in your Watchlist yet.{" "}
         <Link href="/search" className="text-primary underline-offset-4 hover:underline">
           Search to add something →
         </Link>

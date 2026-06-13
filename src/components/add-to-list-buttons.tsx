@@ -24,7 +24,7 @@ export function AddToListButtons({ mediaId, inWishlist: initialInWishlist }: Add
     setAdding(false);
     if (result.status === "added") {
       setInWishlist(true);
-      toastManager.add({ title: "Added to Wishlist" });
+      toastManager.add({ title: "Added to Watchlist" });
     } else if (result.status === "already_exists") {
       setInWishlist(true);
     } else {
@@ -40,7 +40,7 @@ export function AddToListButtons({ mediaId, inWishlist: initialInWishlist }: Add
           type="button"
           onClick={handleAddToWishlist}
           disabled={inWishlist || adding}
-          aria-label={inWishlist ? "In Wishlist" : "Add to Wishlist"}
+          aria-label={inWishlist ? "In Watchlist" : "Add to Watchlist"}
           className={cn(
             "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -54,12 +54,12 @@ export function AddToListButtons({ mediaId, inWishlist: initialInWishlist }: Add
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
-              In Wishlist
+              In Watchlist
             </>
           ) : adding ? (
             "Adding…"
           ) : (
-            "Add to Wishlist"
+            "Add to Watchlist"
           )}
         </button>
 

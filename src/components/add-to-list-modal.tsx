@@ -5,6 +5,7 @@ import { Modal, ModalContent } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { getUserLists, addToList, createListAndAdd, type UserList } from "@/lib/actions/list";
 import { toastManager } from "@/components/ui/toaster";
+import { listDisplayName } from "@/lib/labels";
 
 interface AddToListModalProps {
   mediaId: string;
@@ -83,10 +84,7 @@ export function AddToListModal({ mediaId, open, onOpenChange }: AddToListModalPr
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">
-                      {list.name}
-                      {list.isDefaultWishlist && (
-                        <span className="ml-1.5 text-xs text-muted-foreground font-normal">Wishlist</span>
-                      )}
+                      {listDisplayName(list)}
                     </p>
                     <p className="text-xs text-muted-foreground">{list.itemCount} items</p>
                   </div>

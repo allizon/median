@@ -10,6 +10,7 @@ import { ListModal } from "@/components/list-modal";
 import { toastManager } from "@/components/ui/toaster";
 import { removeListItem, deleteList, setListItemScore, clearListItemScore } from "@/lib/actions/list";
 import { AddToListSearchModal } from "@/components/add-to-list-search-modal";
+import { listDisplayName } from "@/lib/labels";
 
 const VISIBILITY_LABELS: Record<ListVisibility, string> = {
   private: "Private",
@@ -142,7 +143,7 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-semibold truncate">{list.name}</h1>
+            <h1 className="text-xl font-semibold truncate">{listDisplayName(list)}</h1>
             <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
               {VISIBILITY_LABELS[list.visibility]}
             </span>
@@ -255,7 +256,7 @@ export function ListDetail({ list: initialList, initialItems }: ListDetailProps)
       {/* Add items modal */}
       <AddToListSearchModal
         listId={list.id}
-        listName={list.name}
+        listName={listDisplayName(list)}
         existingMediaIds={new Set(items.map((i) => i.media.id))}
         open={addOpen}
         onOpenChange={setAddOpen}

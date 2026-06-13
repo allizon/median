@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { FeaturedListsEditor } from "./FeaturedListsEditor";
 import { AddMediaButton } from "./AddMediaButton";
 import { NewListButton } from "@/components/new-list-button";
+import { listDisplayName } from "@/lib/labels";
 
 type ViewerRole = "owner" | "friend" | "stranger" | "logged-out";
 
@@ -117,6 +118,7 @@ export default async function ProfilePage({
           select: {
             id: true,
             name: true,
+            isDefaultWishlist: true,
             visibility: true,
             featuredOnProfile: true,
             profilePosition: true,
@@ -145,6 +147,7 @@ export default async function ProfilePage({
           select: {
             id: true,
             name: true,
+            isDefaultWishlist: true,
             visibility: true,
             featuredOnProfile: true,
             profilePosition: true,
@@ -259,7 +262,7 @@ export default async function ProfilePage({
                       className="rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition-colors space-y-2"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="font-medium text-sm">{list.name}</p>
+                        <p className="font-medium text-sm">{listDisplayName(list)}</p>
                         <span className="text-xs text-muted-foreground shrink-0">
                           {list._count.items} items
                         </span>

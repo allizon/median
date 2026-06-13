@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { ListVisibility } from "@prisma/client";
+import { listDisplayName } from "@/lib/labels";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ export async function addToWishlist(
     select: { id: true, name: true },
   });
 
-  if (!wishlist) return { status: "error", message: "Wishlist not found" };
+  if (!wishlist) return { status: "error", message: "Watchlist not found" };
 
   const existing = await prisma.listItem.findFirst({
     where: { listId: wishlist.id, mediaId },
@@ -98,7 +99,7 @@ export async function addToList(
   // Verify the list belongs to the user
   const list = await prisma.list.findFirst({
     where: { id: listId, ownerId: session.user.id },
-    select: { id: true, name: true },
+    select: { id: true, name: true, isDefaultWishlist: true },
   });
 
   if (!list) return { status: "error", message: "List not found" };
@@ -114,7 +115,7 @@ export async function addToList(
     data: { listId, mediaId, addedById: session.user.id },
   });
 
-  return { status: "added", listName: list.name };
+  return { status: "added", listName: listDisplayName(list) };
 }
 
 // ── createList ────────────────────────────────────────────────────────────────
@@ -202,7 +203,7 @@ export async function deleteList(id: string): Promise<DeleteListResult> {
     select: { isDefaultWishlist: true },
   });
   if (!list) return { status: "error", message: "List not found" };
-  if (list.isDefaultWishlist) return { status: "error", message: "Cannot delete default Wishlist" };
+  if (list.isDefaultWishlist) return { status: "error", message: "Cannot delete default Watchlist" };
 
   await prisma.list.delete({ where: { id } });
 
