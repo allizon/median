@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { searchTmdb } from "@/lib/tmdb";
+import { searchTmdb, fetchTmdbDetails } from "@/lib/tmdb";
 
 const MOVIE = {
   id: 550,
@@ -127,5 +127,80 @@ describe("searchTmdb", () => {
     const [url, options] = vi.mocked(fetch).mock.calls[0];
     expect(url.toString()).not.toContain("api_key");
     expect(options?.headers).toMatchObject({ Authorization: "Bearer test-key" });
+  });
+});
+
+describe("fetchTmdbDetails", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  function mockDetailFetch(result: unknown) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => result,
+      }),
+    );
+  }
+
+  it("requests the /movie/{id} endpoint and maps the response for movies", async () => {
+    vi.stubEnv("TMDB_API_KEY", "test-key");
+    mockDetailFetch({
+      id: 550,
+      title: "Fight Club",
+      release_date: "1999-10-15",
+      poster_path: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+    });
+
+    const result = await fetchTmdbDetails("550", "movie");
+
+    const [url] = vi.mocked(fetch).mock.calls[0];
+    expect(url.toString()).toContain("/movie/550");
+    expect(result).toMatchObject({
+      externalId: "550",
+      title: "Fight Club",
+      year: 1999,
+      type: "movie",
+      posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+    });
+  });
+
+  it("requests the /tv/{id} endpoint (not /tv_show/) and maps the response for TV shows", async () => {
+    vi.stubEnv("TMDB_API_KEY", "test-key");
+    mockDetailFetch({
+      id: 1396,
+      name: "Breaking Bad",
+      first_air_date: "2008-01-20",
+      poster_path: "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+    });
+
+    const result = await fetchTmdbDetails("1396", "tv_show");
+
+    const [url] = vi.mocked(fetch).mock.calls[0];
+    expect(url.toString()).toContain("/tv/1396");
+    expect(url.toString()).not.toContain("tv_show");
+    expect(result).toMatchObject({
+      externalId: "1396",
+      title: "Breaking Bad",
+      year: 2008,
+      type: "tv_show",
+      posterPath: "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+    });
+  });
+
+  it("returns null when TMDB_API_KEY is not set", async () => {
+    vi.stubEnv("TMDB_API_KEY", "");
+    const result = await fetchTmdbDetails("550", "movie");
+    expect(result).toBeNull();
+  });
+
+  it("returns null on a non-ok response", async () => {
+    vi.stubEnv("TMDB_API_KEY", "test-key");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 404 }));
+    const result = await fetchTmdbDetails("550", "movie");
+    expect(result).toBeNull();
   });
 });

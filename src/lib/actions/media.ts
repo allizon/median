@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { MediaType } from "@prisma/client";
-import { searchTmdb as fetchFromTmdb, type TmdbResult } from "@/lib/tmdb";
+import { searchTmdb as fetchFromTmdb, fetchTmdbDetails, type TmdbResult } from "@/lib/tmdb";
 
 export type { TmdbResult } from "@/lib/tmdb";
 
@@ -168,4 +168,50 @@ export async function searchCatalog(query: string): Promise<CatalogResult[]> {
     take: 20,
     select: { id: true, title: true, type: true, year: true, creator: true },
   });
+}
+
+// ── Poster backfill ───────────────────────────────────────────────────────────
+
+// TMDB poster paths look like "/abc123XYZ.jpg" — guard against persisting anything else.
+const TMDB_POSTER_PATH_RE = /^\/[\w-]+\.(jpg|jpeg|png)$/i;
+
+export type BackfillPosterResult =
+  | { status: "ok"; posterPath: string }
+  | { status: "skipped" }
+  | { status: "error"; message: string };
+
+export async function backfillPosterPath(mediaId: string): Promise<BackfillPosterResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { status: "error", message: "Not authenticated" };
+  }
+
+  const media = await prisma.media.findUnique({
+    where: { id: mediaId },
+    select: { type: true, externalId: true, posterPath: true },
+  });
+  if (!media) {
+    return { status: "error", message: "Not found" };
+  }
+
+  // Already has a poster, or nothing to look up against.
+  if (media.posterPath || !media.externalId) {
+    return { status: "skipped" };
+  }
+
+  const details = await fetchTmdbDetails(
+    media.externalId,
+    media.type === "movie" ? "movie" : "tv_show",
+  );
+  if (!details?.posterPath || !TMDB_POSTER_PATH_RE.test(details.posterPath)) {
+    return { status: "skipped" };
+  }
+
+  await prisma.media.update({
+    where: { id: mediaId },
+    data: { posterPath: details.posterPath },
+  });
+
+  revalidatePath(`/media/${mediaId}`);
+  return { status: "ok", posterPath: details.posterPath };
 }

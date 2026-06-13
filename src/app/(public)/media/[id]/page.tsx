@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AddToListButtons } from "@/components/add-to-list-buttons";
+import { MediaPoster } from "@/components/media/poster";
 
 const TYPE_LABELS: Record<string, string> = {
   movie: "Movie",
@@ -32,6 +33,8 @@ export default async function MediaItemPage({
         year: true,
         creator: true,
         createdAt: true,
+        externalId: true,
+        posterPath: true,
         seasons: {
           orderBy: { number: "asc" },
           select: { id: true, number: true, title: true },
@@ -63,6 +66,13 @@ export default async function MediaItemPage({
     <main className="mx-auto max-w-2xl px-4 py-10 space-y-8">
       {/* Header */}
       <div className="space-y-3">
+        <MediaPoster
+          mediaId={media.id}
+          title={media.title}
+          posterPath={media.posterPath}
+          externalId={media.externalId}
+        />
+
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium">
             {typeLabel}
