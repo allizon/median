@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import { MediaPicker } from "@/components/media-picker";
 
 vi.mock("@/lib/actions/media", () => ({
@@ -160,6 +160,36 @@ describe("MediaPicker", () => {
 
     expect(onSelect).toHaveBeenCalledWith({ id: "media-existing", title: "Fight Club" });
     expect(mockCreateMedia).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks the originating TMDB row as Added after resolving via 'Use this'", async () => {
+    mockSearchCatalog.mockResolvedValue([]);
+    mockSearchTmdb.mockResolvedValue({ status: "ok", results: [TMDB_MOVIE] });
+    mockCreateMedia.mockResolvedValue({
+      status: "duplicates",
+      candidates: [
+        { id: "media-existing", title: "Fight Club", year: 1999, creator: "David Fincher", type: "movie" },
+      ],
+    });
+    const onSelect = vi.fn();
+
+    render(<MediaPicker onSelect={onSelect} />);
+    await typeQuery("fight club");
+    await waitFor(() => expect(screen.getByText("+ Add")).toBeInTheDocument());
+
+    const resultsList = screen.getByText("Fight Club").closest("ul")!;
+    fireEvent.click(within(resultsList).getByText("+ Add"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Similar items already exist/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Use this"));
+
+    await waitFor(() => {
+      expect(within(resultsList).getByText("Added ✓")).toBeInTheDocument();
+    });
+    expect(within(resultsList).queryByText("+ Add")).not.toBeInTheDocument();
   });
 
   it("force-creates and calls onSelect when 'Create new anyway' is chosen", async () => {

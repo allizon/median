@@ -44,6 +44,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
   const [duplicates, setDuplicates] = React.useState<DuplicateCandidate[]>([]);
   const [pendingInput, setPendingInput] = React.useState<CreateMediaInput | null>(null);
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const searchGenRef = React.useRef(0);
 
   const isAdded = React.useCallback(
     (key: string) => addedKeys.has(key) || (disabledIds?.has(key) ?? false),
@@ -70,14 +71,18 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
     setTmdbResults([]);
     setTmdbError(null);
 
+    const gen = ++searchGenRef.current;
+
     debounceRef.current = setTimeout(async () => {
       const catalog = await searchCatalog(query);
+      if (searchGenRef.current !== gen) return;
       setCatalogResults(catalog);
       setCatalogSearching(false);
 
       if (catalog.length === 0) {
         setTmdbSearching(true);
         const tmdb = await searchTmdb(query);
+        if (searchGenRef.current !== gen) return;
         setTmdbSearching(false);
         if (tmdb.status === "ok") {
           setTmdbResults(tmdb.results);
@@ -139,8 +144,12 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
 
   function useDuplicate(candidate: DuplicateCandidate) {
     setDuplicates([]);
+    setAddedKeys((prev) => {
+      const next = new Set(prev).add(candidate.id);
+      if (pendingInput?.externalId) next.add(pendingInput.externalId);
+      return next;
+    });
     setPendingInput(null);
-    setAddedKeys((prev) => new Set(prev).add(candidate.id));
     onSelect({ id: candidate.id, title: candidate.title });
   }
 
