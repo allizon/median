@@ -50,6 +50,10 @@ _Avoid_: watch later, want-to-read
 **Log** (verb):
 The explicit user action of creating a **DiaryEntry** for a media item — analogous to Letterboxd's "log a movie". A DiaryEntry never comes into existence implicitly; the user always initiates it. The entry point is `status=in-progress` (or directly `finished` via "mark as done").
 
+**Media Picker**:
+The shared search-and-resolve UI for attaching a movie or TV show to a **List** or to the catalog: searches the catalog first, falls back to TMDB results when the catalog has no match, and offers manual entry when neither finds the title. Used by both the "Add to list" flow and the "Add new item to catalog" flow.
+_Avoid_: search modal, add dialog
+
 ## Public surface area
 
 On a **Public List** page visible to an **Anonymous Visitor**, the following fields are exposed:
