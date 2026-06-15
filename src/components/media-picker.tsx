@@ -172,7 +172,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
     );
   }
 
-  function useDuplicate(candidate: DuplicateCandidate) {
+  function selectDuplicate(candidate: DuplicateCandidate) {
     setDuplicates([]);
     setAddedKeys((prev) => {
       const next = new Set(prev).add(candidate.id);
@@ -272,7 +272,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
                     {" · "}
                     <span className="capitalize">{(TYPE_LABELS[d.type] ?? d.type).replace("_", " ")}</span>
                   </span>
-                  <Button type="button" size="sm" variant="outline" onClick={() => useDuplicate(d)}>
+                  <Button type="button" size="sm" variant="outline" onClick={() => selectDuplicate(d)}>
                     Use this
                   </Button>
                 </li>
@@ -450,7 +450,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
                   {" · "}
                   <span className="capitalize">{(TYPE_LABELS[d.type] ?? d.type).replace("_", " ")}</span>
                 </span>
-                <Button type="button" size="sm" variant="outline" onClick={() => useDuplicate(d)}>
+                <Button type="button" size="sm" variant="outline" onClick={() => selectDuplicate(d)}>
                   Use this
                 </Button>
               </li>
