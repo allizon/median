@@ -16,6 +16,9 @@ const seasonRowSchema = z.object({
   title: z.string().optional(),
 });
 
+// TMDB poster paths look like "/abc123XYZ.jpg" — guard against persisting anything else.
+const TMDB_POSTER_PATH_RE = /^\/[\w-]+\.(jpg|jpeg|png)$/i;
+
 const createMediaSchema = z.object({
   title: z.string().min(1, "Title is required").max(500),
   type: z.nativeEnum(MediaType),
@@ -26,7 +29,7 @@ const createMediaSchema = z.object({
   creator: z.string().max(500).optional(),
   seasons: z.array(seasonRowSchema).optional(),
   externalId: z.string().optional(),
-  posterPath: z.string().optional(),
+  posterPath: z.string().regex(TMDB_POSTER_PATH_RE, "Invalid poster path").optional(),
 });
 
 // Raw form values (year is a string from the input element)
@@ -171,9 +174,6 @@ export async function searchCatalog(query: string): Promise<CatalogResult[]> {
 }
 
 // ── Poster backfill ───────────────────────────────────────────────────────────
-
-// TMDB poster paths look like "/abc123XYZ.jpg" — guard against persisting anything else.
-const TMDB_POSTER_PATH_RE = /^\/[\w-]+\.(jpg|jpeg|png)$/i;
 
 export type BackfillPosterResult =
   | { status: "ok"; posterPath: string }

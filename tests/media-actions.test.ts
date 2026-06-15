@@ -9,6 +9,11 @@ vi.mock("@/lib/prisma", () => ({
     media: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      create: vi.fn(),
+      findMany: vi.fn(),
+    },
+    season: {
+      createMany: vi.fn(),
     },
   },
 }));
@@ -25,11 +30,14 @@ vi.mock("next/cache", () => ({
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { fetchTmdbDetails } from "@/lib/tmdb";
-import { backfillPosterPath } from "@/lib/actions/media";
+import { MediaType } from "@prisma/client";
+import { backfillPosterPath, createMedia } from "@/lib/actions/media";
 
 const mockAuth = vi.mocked(auth);
 const mockFindUnique = vi.mocked(prisma.media.findUnique);
 const mockUpdate = vi.mocked(prisma.media.update);
+const mockCreate = vi.mocked(prisma.media.create);
+const mockFindMany = vi.mocked(prisma.media.findMany);
 const mockFetchTmdbDetails = vi.mocked(fetchTmdbDetails);
 
 function mockMedia(row: { type: string; externalId: string | null; posterPath: string | null }) {
@@ -120,5 +128,45 @@ describe("backfillPosterPath", () => {
     const result = await backfillPosterPath("media-1");
     expect(result).toEqual({ status: "skipped" });
     expect(mockUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("createMedia", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } } as any);
+  });
+
+  it("rejects a posterPath that doesn't look like a TMDB path", async () => {
+    const result = await createMedia({
+      title: "Fight Club",
+      type: MediaType.movie,
+      externalId: "550",
+      posterPath: "javascript:alert(1)",
+    });
+
+    expect(result.status).toBe("error");
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("accepts a posterPath that matches the TMDB path format", async () => {
+    mockFindMany.mockResolvedValue([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockCreate.mockResolvedValue({ id: "media-1" } as any);
+
+    const result = await createMedia({
+      title: "Fight Club",
+      type: MediaType.movie,
+      externalId: "550",
+      posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+    });
+
+    expect(result).toEqual({ status: "created", mediaId: "media-1" });
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg" }),
+      }),
+    );
   });
 });
