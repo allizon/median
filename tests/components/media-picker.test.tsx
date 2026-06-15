@@ -238,4 +238,86 @@ describe("MediaPicker", () => {
     });
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  it("shows a manual-entry link, pre-filled with the current query", async () => {
+    mockSearchCatalog.mockResolvedValue([]);
+    mockSearchTmdb.mockResolvedValue({ status: "empty" });
+
+    render(<MediaPicker onSelect={vi.fn()} />);
+    await typeQuery("Some Obscure Title");
+
+    await waitFor(() => {
+      expect(screen.getByText(/Not finding it\? Add manually/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText(/Not finding it\? Add manually/i));
+
+    expect(screen.getByLabelText(/^Title/)).toHaveValue("Some Obscure Title");
+  });
+
+  it("creates the media item via the manual form and calls onSelect", async () => {
+    mockSearchCatalog.mockResolvedValue([]);
+    mockSearchTmdb.mockResolvedValue({ status: "empty" });
+    mockCreateMedia.mockResolvedValue({ status: "created", mediaId: "media-7" });
+    const onSelect = vi.fn();
+
+    render(<MediaPicker onSelect={onSelect} />);
+    await typeQuery("Some Obscure Title");
+    await waitFor(() => screen.getByText(/Not finding it\? Add manually/i));
+    fireEvent.click(screen.getByText(/Not finding it\? Add manually/i));
+
+    fireEvent.click(screen.getByRole("button", { name: "Movie" }));
+    fireEvent.change(screen.getByLabelText(/Year/), { target: { value: "2021" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add to catalog" }));
+
+    await waitFor(() => {
+      expect(mockCreateMedia).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Some Obscure Title", type: "movie", year: "2021" }),
+        false,
+      );
+    });
+    expect(onSelect).toHaveBeenCalledWith({ id: "media-7", title: "Some Obscure Title" });
+  });
+
+  it("returns to the search step after a successful manual submission", async () => {
+    mockSearchCatalog.mockResolvedValue([]);
+    mockSearchTmdb.mockResolvedValue({ status: "empty" });
+    mockCreateMedia.mockResolvedValue({ status: "created", mediaId: "media-7" });
+
+    render(<MediaPicker onSelect={vi.fn()} />);
+    await typeQuery("Some Obscure Title");
+    await waitFor(() => screen.getByText(/Not finding it\? Add manually/i));
+    fireEvent.click(screen.getByText(/Not finding it\? Add manually/i));
+    fireEvent.click(screen.getByRole("button", { name: "Add to catalog" }));
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/search by title/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows duplicate candidates from the manual form and supports 'Use this'", async () => {
+    mockSearchCatalog.mockResolvedValue([]);
+    mockSearchTmdb.mockResolvedValue({ status: "empty" });
+    mockCreateMedia.mockResolvedValue({
+      status: "duplicates",
+      candidates: [
+        { id: "media-existing", title: "Some Obscure Title", year: null, creator: null, type: "movie" },
+      ],
+    });
+    const onSelect = vi.fn();
+
+    render(<MediaPicker onSelect={onSelect} />);
+    await typeQuery("Some Obscure Title");
+    await waitFor(() => screen.getByText(/Not finding it\? Add manually/i));
+    fireEvent.click(screen.getByText(/Not finding it\? Add manually/i));
+    fireEvent.click(screen.getByRole("button", { name: "Add to catalog" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Similar items already exist/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Use this"));
+
+    expect(onSelect).toHaveBeenCalledWith({ id: "media-existing", title: "Some Obscure Title" });
+  });
 });

@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { MediaType } from "@prisma/client";
+import { cn } from "@/lib/utils";
 import {
   searchCatalog,
   searchTmdb,
@@ -16,6 +18,20 @@ const TYPE_LABELS: Record<string, string> = {
   movie: "Movie",
   tv_show: "TV Show",
 };
+
+const TYPE_OPTIONS: { value: MediaType; label: string }[] = [
+  { value: "movie", label: "Movie" },
+  { value: "tv_show", label: "TV Show" },
+];
+
+function creatorLabel(type: MediaType): string {
+  return type === "movie" ? "Director" : "Creator / Showrunner";
+}
+
+interface SeasonRow {
+  number: number;
+  title: string;
+}
 
 export interface MediaPickerSelection {
   id: string;
@@ -45,6 +61,15 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
   const [pendingInput, setPendingInput] = React.useState<CreateMediaInput | null>(null);
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const searchGenRef = React.useRef(0);
+
+  const [step, setStep] = React.useState<"search" | "manual">("search");
+  const [manualTitle, setManualTitle] = React.useState("");
+  const [manualType, setManualType] = React.useState<MediaType>("movie");
+  const [manualYear, setManualYear] = React.useState("");
+  const [manualCreator, setManualCreator] = React.useState("");
+  const [seasonsOpen, setSeasonsOpen] = React.useState(false);
+  const [seasons, setSeasons] = React.useState<SeasonRow[]>([{ number: 1, title: "" }]);
+  const [manualSubmitting, setManualSubmitting] = React.useState(false);
 
   const isAdded = React.useCallback(
     (key: string) => addedKeys.has(key) || (disabledIds?.has(key) ?? false),
@@ -124,6 +149,11 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
     setPendingInput(null);
     setAddedKeys((prev) => new Set(prev).add(key));
     onSelect({ id: result.mediaId, title });
+
+    if (step === "manual") {
+      resetManualForm();
+      setStep("search");
+    }
   }
 
   async function selectTmdbItem(item: TmdbResult, force = false) {
@@ -151,6 +181,11 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
     });
     setPendingInput(null);
     onSelect({ id: candidate.id, title: candidate.title });
+
+    if (step === "manual") {
+      resetManualForm();
+      setStep("search");
+    }
   }
 
   function createAnyway() {
@@ -159,7 +194,233 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
     void resolveCreateMedia(pendingInput, true, key, pendingInput.title);
   }
 
+  // ── Manual entry ────────────────────────────────────────────────────
+
+  function openManualEntry() {
+    setManualTitle(query.trim());
+    setDuplicates([]);
+    setPendingInput(null);
+    setActionError(null);
+    setStep("manual");
+  }
+
+  function resetManualForm() {
+    setManualTitle("");
+    setManualType("movie");
+    setManualYear("");
+    setManualCreator("");
+    setSeasonsOpen(false);
+    setSeasons([{ number: 1, title: "" }]);
+  }
+
+  function addSeasonRow() {
+    setSeasons((prev) => [
+      ...prev,
+      { number: prev.length > 0 ? prev[prev.length - 1].number + 1 : 1, title: "" },
+    ]);
+  }
+
+  function removeSeasonRow(index: number) {
+    setSeasons((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateSeasonRow(index: number, field: keyof SeasonRow, value: string | number) {
+    setSeasons((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  }
+
+  async function submitManual(force: boolean) {
+    setManualSubmitting(true);
+    const input: CreateMediaInput = {
+      title: manualTitle,
+      type: manualType,
+      year: manualYear,
+      creator: manualCreator || undefined,
+      seasons:
+        seasonsOpen && manualType === "tv_show" ? seasons.filter((s) => s.number > 0) : undefined,
+    };
+    await resolveCreateMedia(input, force, "manual", manualTitle);
+    setManualSubmitting(false);
+  }
+
   // ── Render ──────────────────────────────────────────────────────────
+
+  if (step === "manual") {
+    return (
+      <div className="flex flex-col gap-4">
+        <button
+          type="button"
+          onClick={() => setStep("search")}
+          className="self-start text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to search
+        </button>
+
+        {duplicates.length > 0 && (
+          <div
+            role="alert"
+            className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/40"
+          >
+            <p className="text-sm font-medium text-amber-900 dark:text-amber-200 mb-2">
+              Similar items already exist. Did you mean one of these?
+            </p>
+            <ul className="space-y-2 mb-3">
+              {duplicates.map((d) => (
+                <li key={d.id} className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-amber-800 dark:text-amber-300">
+                    {d.title}
+                    {d.year ? ` (${d.year})` : ""}
+                    {" · "}
+                    <span className="capitalize">{(TYPE_LABELS[d.type] ?? d.type).replace("_", " ")}</span>
+                  </span>
+                  <Button type="button" size="sm" variant="outline" onClick={() => useDuplicate(d)}>
+                    Use this
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            <Button type="button" size="sm" variant="outline" onClick={createAnyway}>
+              Create new anyway
+            </Button>
+          </div>
+        )}
+
+        {actionError && <p role="alert" className="text-sm text-destructive">{actionError}</p>}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submitManual(duplicates.length > 0);
+          }}
+          className="flex flex-col gap-5"
+        >
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="media-picker-title" className="text-sm font-medium">
+              Title <span aria-hidden="true" className="text-destructive">*</span>
+            </label>
+            <input
+              id="media-picker-title"
+              type="text"
+              required
+              value={manualTitle}
+              onChange={(e) => setManualTitle(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              placeholder="e.g. Dune"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">
+              Type <span aria-hidden="true" className="text-destructive">*</span>
+            </span>
+            <div role="group" aria-label="Media type" className="inline-flex rounded-lg border border-input overflow-hidden">
+              {TYPE_OPTIONS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setManualType(value)}
+                  className={cn(
+                    "flex-1 px-3 py-1.5 text-sm font-medium transition-colors outline-none",
+                    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                    manualType === value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background text-foreground hover:bg-muted",
+                  )}
+                  aria-pressed={manualType === value}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="media-picker-year" className="text-sm font-medium">
+              Year <span className="text-muted-foreground text-xs">(optional)</span>
+            </label>
+            <input
+              id="media-picker-year"
+              type="number"
+              min={1800}
+              max={2200}
+              value={manualYear}
+              onChange={(e) => setManualYear(e.target.value)}
+              className="h-9 w-32 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              placeholder="e.g. 2021"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="media-picker-creator" className="text-sm font-medium">
+              {creatorLabel(manualType)} <span className="text-muted-foreground text-xs">(optional)</span>
+            </label>
+            <input
+              id="media-picker-creator"
+              type="text"
+              value={manualCreator}
+              onChange={(e) => setManualCreator(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              placeholder={creatorLabel(manualType)}
+            />
+          </div>
+
+          {manualType === "tv_show" && (
+            <div className="rounded-lg border border-input">
+              <button
+                type="button"
+                onClick={() => setSeasonsOpen((v) => !v)}
+                aria-expanded={seasonsOpen}
+                className="flex w-full items-center justify-between px-3 py-2.5 text-sm font-medium hover:bg-muted transition-colors rounded-lg"
+              >
+                <span>Define seasons</span>
+              </button>
+
+              {seasonsOpen && (
+                <div className="border-t px-3 pb-3 pt-2 flex flex-col gap-2">
+                  {seasons.map((row, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={1}
+                        value={row.number}
+                        onChange={(e) => updateSeasonRow(i, "number", Number(e.target.value))}
+                        aria-label={`Season ${i + 1} number`}
+                        className="h-8 w-16 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+                      />
+                      <input
+                        type="text"
+                        value={row.title}
+                        onChange={(e) => updateSeasonRow(i, "title", e.target.value)}
+                        placeholder="Season title (optional)"
+                        aria-label={`Season ${i + 1} title`}
+                        className="h-8 flex-1 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+                      />
+                      {seasons.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeSeasonRow(i)}
+                          aria-label={`Remove season ${row.number}`}
+                          className="shrink-0 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" onClick={addSeasonRow} className="mt-1 text-sm text-primary hover:underline text-left">
+                    + Add another season
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <Button type="submit" disabled={manualSubmitting} className="w-full">
+            {manualSubmitting ? "Saving…" : duplicates.length > 0 ? "No, create new item anyway" : "Add to catalog"}
+          </Button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -301,6 +562,16 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
             Type to search movies and TV shows
           </p>
         )}
+      </div>
+
+      <div className="shrink-0 pt-2 border-t text-center">
+        <button
+          type="button"
+          onClick={openManualEntry}
+          className="text-sm text-primary hover:underline underline-offset-2"
+        >
+          Not finding it? Add manually →
+        </button>
       </div>
     </div>
   );
