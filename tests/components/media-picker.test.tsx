@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MediaPicker } from "@/components/media-picker";
 
 vi.mock("@/lib/actions/media", () => ({
@@ -319,5 +320,68 @@ describe("MediaPicker", () => {
     fireEvent.click(screen.getByText("Use this"));
 
     expect(onSelect).toHaveBeenCalledWith({ id: "media-existing", title: "Some Obscure Title" });
+  });
+});
+
+describe("MediaPicker — SeasonRow stable keys", () => {
+  it("adds and removes season rows without mixing up data", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(<MediaPicker onSelect={onSelect} />);
+
+    await user.click(screen.getByText("Not finding it? Add manually →"));
+    await user.click(screen.getByText("TV Show"));
+    await user.click(screen.getByText("Define seasons"));
+
+    const seasonNumberInputs = screen.getAllByLabelText(/Season \d+ number/);
+    expect(seasonNumberInputs).toHaveLength(1);
+
+    await user.click(screen.getByText("+ Add another season"));
+    expect(screen.getAllByLabelText(/Season \d+ number/)).toHaveLength(2);
+
+    const titleInputs = screen.getAllByLabelText(/Season \d+ title/);
+    await user.type(titleInputs[0], "First Season");
+    await user.type(titleInputs[1], "Second Season");
+    expect(titleInputs[0]).toHaveValue("First Season");
+    expect(titleInputs[1]).toHaveValue("Second Season");
+
+    const removeButtons = screen.getAllByLabelText(/Remove season/);
+    await user.click(removeButtons[0]);
+
+    const remainingTitles = screen.getAllByLabelText(/Season \d+ title/);
+    expect(remainingTitles).toHaveLength(1);
+    expect(remainingTitles[0]).toHaveValue("Second Season");
+  });
+
+  it("keeps correct number values after removing a middle row", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(<MediaPicker onSelect={onSelect} />);
+
+    await user.click(screen.getByText("Not finding it? Add manually →"));
+    await user.click(screen.getByText("TV Show"));
+    await user.click(screen.getByText("Define seasons"));
+
+    await user.click(screen.getByText("+ Add another season"));
+    await user.click(screen.getByText("+ Add another season"));
+    expect(screen.getAllByLabelText(/Season \d+ number/)).toHaveLength(3);
+
+    const numberInputs = screen.getAllByLabelText(/Season \d+ number/);
+    await user.clear(numberInputs[0]);
+    await user.type(numberInputs[0], "5");
+    await user.clear(numberInputs[1]);
+    await user.type(numberInputs[1], "10");
+    await user.clear(numberInputs[2]);
+    await user.type(numberInputs[2], "15");
+
+    const removeButtons = screen.getAllByLabelText(/Remove season/);
+    await user.click(removeButtons[1]);
+
+    const remainingNumbers = screen.getAllByLabelText(/Season \d+ number/);
+    expect(remainingNumbers).toHaveLength(2);
+    expect(remainingNumbers[0]).toHaveValue(5);
+    expect(remainingNumbers[1]).toHaveValue(15);
   });
 });

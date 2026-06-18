@@ -29,6 +29,7 @@ function creatorLabel(type: MediaType): string {
 }
 
 interface SeasonRow {
+  id: number;
   number: number;
   title: string;
 }
@@ -67,8 +68,9 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
   const [manualType, setManualType] = React.useState<MediaType>("movie");
   const [manualYear, setManualYear] = React.useState("");
   const [manualCreator, setManualCreator] = React.useState("");
+  const nextSeasonId = React.useRef(0);
   const [seasonsOpen, setSeasonsOpen] = React.useState(false);
-  const [seasons, setSeasons] = React.useState<SeasonRow[]>([{ number: 1, title: "" }]);
+  const [seasons, setSeasons] = React.useState<SeasonRow[]>([{ id: nextSeasonId.current++, number: 1, title: "" }]);
   const [manualSubmitting, setManualSubmitting] = React.useState(false);
 
   const isAdded = React.useCallback(
@@ -216,7 +218,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
   function addSeasonRow() {
     setSeasons((prev) => [
       ...prev,
-      { number: prev.length > 0 ? prev[prev.length - 1].number + 1 : 1, title: "" },
+      { id: nextSeasonId.current++, number: prev.length > 0 ? prev[prev.length - 1].number + 1 : 1, title: "" },
     ]);
   }
 
@@ -377,7 +379,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
               {seasonsOpen && (
                 <div className="border-t px-3 pb-3 pt-2 flex flex-col gap-2">
                   {seasons.map((row, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div key={row.id} className="flex items-center gap-2">
                       <input
                         type="number"
                         min={1}
