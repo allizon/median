@@ -9,6 +9,10 @@
 
 Use red-green-refactor when implementing features or fixing bugs. Test first, then implement, then verify.
 
+## Issue discipline
+
+When closing a GitHub issue, always add a comment summarizing the fix and referencing the commit(s).
+
 ## Recent work
 
 - 2026-06-18: Implemented #37 — dashboard wishlist button opens modal instead of navigating to /search
