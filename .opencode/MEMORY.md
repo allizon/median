@@ -13,6 +13,14 @@ Use red-green-refactor when implementing features or fixing bugs. Test first, th
 
 When closing a GitHub issue, always add a comment summarizing the fix and referencing the commit(s).
 
+## Commit checklist
+
+Before every commit, run:
+- `git status` — verify the right files are staged, no unexpected files included
+- `git diff --cached` — verify each change is intentional and complete
+
+This prevents silent failures (e.g., a file rename that only deletes the old file but never commits the new one).
+
 ## Recent work
 
 - 2026-06-18: Implemented #37 — dashboard wishlist button opens modal instead of navigating to /search
