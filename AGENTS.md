@@ -63,10 +63,10 @@ TMDB_API_KEY=<TMDB v4 Bearer token, NOT v3 API key>
 - `CONTEXT.md` — domain language reference.
 - `docs/adr/` — 6 ADRs covering key decisions.
 - `opencode.json` — minimal (permissions only).
-- `.opencode/memory.md` — persistent session memory (branching policy, preferences, past work).
+- `.opencode/MEMORY.md` — persistent session memory (branching policy, preferences, past work).
 
 ## Git workflow
 
 - **Code changes** (`.ts`, `.tsx`, `.js`, `.css`, configs, etc.) → create a feature branch, push branch, open PR to `main`. Never push code directly to `main`.
 - **Documentation / markdown only** → can push directly to `main`.
-- Check `.opencode/memory.md` for additional session context and preferences.
+- Check `.opencode/MEMORY.md` for additional session context and preferences.
