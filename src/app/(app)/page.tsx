@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NewListButton } from "@/components/new-list-button";
+import { AddToWatchlistButton } from "@/components/add-to-watchlist-button";
 import { WishlistWidget, type WishlistItem } from "@/components/wishlist-widget";
 import { getRandomGreeting } from "@/lib/greetings";
 
@@ -12,7 +13,7 @@ export default async function HomePage() {
   const userId = session!.user!.id!;
   const userName = session!.user!.name || "there";
 
-  const [lists, wishlistItems] = await Promise.all([
+  const [lists, wishlistItems, wishlistMediaIds] = await Promise.all([
     prisma.list.findMany({
       where: {
         OR: [
@@ -36,6 +37,10 @@ export default async function HomePage() {
         id: true,
         media: { select: { id: true, title: true, type: true, year: true, creator: true } },
       },
+    }),
+    prisma.listItem.findMany({
+      where: { list: { ownerId: userId, isDefaultWishlist: true } },
+      select: { mediaId: true },
     }),
   ]);
 
@@ -70,12 +75,19 @@ export default async function HomePage() {
 
       {/* CTAs */}
       <div className="grid grid-cols-2 gap-3">
-        <Link
-          href="/search"
-          className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full justify-center")}
-        >
-          + Add to Watchlist
-        </Link>
+        {wishlist ? (
+          <AddToWatchlistButton
+            wishlistId={wishlist.id}
+            existingMediaIds={wishlistMediaIds.map((i) => i.mediaId)}
+          />
+        ) : (
+          <Link
+            href="/search"
+            className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full justify-center")}
+          >
+            + Add to Watchlist
+          </Link>
+        )}
         <Link
           href="/search"
           className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full justify-center")}

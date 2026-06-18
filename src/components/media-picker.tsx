@@ -212,7 +212,7 @@ export function MediaPicker({ initialQuery = "", disabledIds, onSelect }: MediaP
     setManualYear("");
     setManualCreator("");
     setSeasonsOpen(false);
-    setSeasons([{ number: 1, title: "" }]);
+    setSeasons([{ id: nextSeasonId.current++, number: 1, title: "" }]);
   }
 
   function addSeasonRow() {
