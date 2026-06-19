@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { NewListButton } from "@/components/new-list-button";
 import { AddToWatchlistButton } from "@/components/add-to-watchlist-button";
 import { WishlistWidget, type WishlistItem } from "@/components/wishlist-widget";
+import { AddToWatchlistButton } from "@/components/add-to-watchlist-button";
 import { getRandomGreeting } from "@/lib/greetings";
 
 export default async function HomePage() {
