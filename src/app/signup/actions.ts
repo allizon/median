@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { userRepository } from "@/lib/repositories";
 import { signIn } from "@/auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -45,10 +45,7 @@ export async function signupAction(
 
   const { username, email, password } = parsed.data;
 
-  const existing = await prisma.user.findFirst({
-    where: { OR: [{ username }, { email }] },
-    select: { username: true, email: true },
-  });
+  const existing = await userRepository.findFirstForSignup(username, email);
 
   if (existing) {
     if (existing.username === username) {
@@ -59,20 +56,7 @@ export async function signupAction(
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  await prisma.user.create({
-    data: {
-      username,
-      email,
-      passwordHash,
-      ownedLists: {
-        create: {
-          name: "Wishlist",
-          isDefaultWishlist: true,
-          visibility: "private",
-        },
-      },
-    },
-  });
+  await userRepository.createWithDefaultList({ username, email, passwordHash });
 
   try {
     await signIn("credentials", { username, password, redirect: false });

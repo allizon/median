@@ -4,24 +4,22 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    list: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    listItem: {
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      delete: vi.fn(),
-    },
-    listItemScore: {
-      upsert: vi.fn(),
-      deleteMany: vi.fn(),
-    },
+vi.mock("@/lib/repositories", () => ({
+  listRepository: {
+    findOwnerLists: vi.fn(),
+    findDefaultWishlist: vi.fn(),
+    findListItem: vi.fn(),
+    createListItem: vi.fn(),
+    findListByIdForOwner: vi.fn(),
+    findListForUpdate: vi.fn(),
+    createList: vi.fn(),
+    updateList: vi.fn(),
+    deleteList: vi.fn(),
+    findListItemWithOwner: vi.fn(),
+    deleteListItem: vi.fn(),
+    upsertListItemScore: vi.fn(),
+    deleteListItemScore: vi.fn(),
+    createListAndAdd: vi.fn(),
   },
 }));
 
@@ -37,7 +35,7 @@ vi.mock("@/lib/labels", () => ({
 }));
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { listRepository } from "@/lib/repositories";
 import {
   getUserLists,
   addToWishlist,
@@ -52,16 +50,21 @@ import {
 } from "@/lib/actions/list";
 
 const mockAuth = vi.mocked(auth);
-const mockListFindMany = vi.mocked(prisma.list.findMany);
-const mockListFindFirst = vi.mocked(prisma.list.findFirst);
-const mockListCreate = vi.mocked(prisma.list.create);
-const mockListUpdate = vi.mocked(prisma.list.update);
-const mockListDelete = vi.mocked(prisma.list.delete);
-const mockListItemFindFirst = vi.mocked(prisma.listItem.findFirst);
-const mockListItemCreate = vi.mocked(prisma.listItem.create);
-const mockListItemDelete = vi.mocked(prisma.listItem.delete);
-const mockListItemScoreUpsert = vi.mocked(prisma.listItemScore.upsert);
-const mockListItemScoreDeleteMany = vi.mocked(prisma.listItemScore.deleteMany);
+const mockFindOwnerLists = vi.mocked(listRepository.findOwnerLists);
+const mockFindDefaultWishlist = vi.mocked(listRepository.findDefaultWishlist);
+const mockFindListItem = vi.mocked(listRepository.findListItem);
+const mockCreateListItem = vi.mocked(listRepository.createListItem);
+const mockFindListByIdForOwner = vi.mocked(listRepository.findListByIdForOwner);
+const mockFindListForUpdate = vi.mocked(listRepository.findListForUpdate);
+const mockCreateList = vi.mocked(listRepository.createList);
+const mockUpdateList = vi.mocked(listRepository.updateList);
+const mockDeleteList = vi.mocked(listRepository.deleteList);
+const mockFindListItemWithOwner = vi.mocked(listRepository.findListItemWithOwner);
+const mockDeleteListItem = vi.mocked(listRepository.deleteListItem);
+const mockUpsertListItemScore = vi.mocked(listRepository.upsertListItemScore);
+const mockDeleteListItemScore = vi.mocked(listRepository.deleteListItemScore);
+const mockCreateListAndAdd = vi.mocked(listRepository.createListAndAdd);
+
 
 function authed() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,7 +102,7 @@ describe("getUserLists", () => {
 
   it("returns lists with item annotations", async () => {
     authed();
-    mockListFindMany.mockResolvedValue([
+    mockFindOwnerLists.mockResolvedValue([
       { id: "l1", name: "Watchlist", isDefaultWishlist: true, _count: { items: 3 }, items: [] },
       { id: "l2", name: "Favorites", isDefaultWishlist: false, _count: { items: 1 }, items: [{ id: ITEM_ID }] },
     ] as never);
@@ -112,9 +115,9 @@ describe("getUserLists", () => {
     ]);
   });
 
-  it("returns empty when Prisma throws", async () => {
+  it("returns empty when repository throws", async () => {
     authed();
-    mockListFindMany.mockRejectedValue(new Error("DB error"));
+    mockFindOwnerLists.mockRejectedValue(new Error("DB error"));
     expect(await getUserLists(MEDIA_ID)).toEqual([]);
   });
 });
@@ -129,31 +132,31 @@ describe("addToWishlist", () => {
 
   it("returns error when watchlist not found", async () => {
     authed();
-    mockListFindFirst.mockResolvedValue(null);
+    mockFindDefaultWishlist.mockResolvedValue(null);
     expect(await addToWishlist(MEDIA_ID)).toEqual({ status: "error", message: "Watchlist not found" });
   });
 
   it("returns already_exists when item is already in watchlist", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow({ name: "Watchlist", isDefaultWishlist: true }));
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID } as never);
+    mockFindDefaultWishlist.mockResolvedValueOnce(listRow({ name: "Watchlist", isDefaultWishlist: true }) as never);
+    mockFindListItem.mockResolvedValueOnce({ id: ITEM_ID } as never);
     expect(await addToWishlist(MEDIA_ID)).toEqual({ status: "already_exists" });
   });
 
   it("adds item to watchlist and returns added", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow({ name: "Watchlist", isDefaultWishlist: true }));
-    mockListItemFindFirst.mockResolvedValueOnce(null);
-    mockListItemCreate.mockResolvedValueOnce({} as never);
+    mockFindDefaultWishlist.mockResolvedValueOnce(listRow({ name: "Watchlist", isDefaultWishlist: true }) as never);
+    mockFindListItem.mockResolvedValueOnce(null);
+    mockCreateListItem.mockResolvedValueOnce({} as never);
 
     expect(await addToWishlist(MEDIA_ID)).toEqual({ status: "added", listName: "Watchlist" });
   });
 
-  it("returns error when Prisma create fails", async () => {
+  it("returns error when repository create fails", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow({ name: "Watchlist", isDefaultWishlist: true }));
-    mockListItemFindFirst.mockResolvedValueOnce(null);
-    mockListItemCreate.mockRejectedValueOnce(new Error("DB error"));
+    mockFindDefaultWishlist.mockResolvedValueOnce(listRow({ name: "Watchlist", isDefaultWishlist: true }) as never);
+    mockFindListItem.mockResolvedValueOnce(null);
+    mockCreateListItem.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await addToWishlist(MEDIA_ID)).toEqual({ status: "error", message: "Failed to add to watchlist. Please try again." });
   });
@@ -174,31 +177,31 @@ describe("addToList", () => {
 
   it("returns error when list not found", async () => {
     authed();
-    mockListFindFirst.mockResolvedValue(null);
+    mockFindListByIdForOwner.mockResolvedValue(null);
     expect(await addToList(LIST_ID, MEDIA_ID)).toEqual({ status: "error", message: "List not found" });
   });
 
   it("returns already_exists when item is already in list", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID } as never);
+    mockFindListByIdForOwner.mockResolvedValueOnce(listRow() as never);
+    mockFindListItem.mockResolvedValueOnce({ id: ITEM_ID } as never);
     expect(await addToList(LIST_ID, MEDIA_ID)).toEqual({ status: "already_exists" });
   });
 
   it("adds item and returns added", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListItemFindFirst.mockResolvedValueOnce(null);
-    mockListItemCreate.mockResolvedValueOnce({} as never);
+    mockFindListByIdForOwner.mockResolvedValueOnce(listRow() as never);
+    mockFindListItem.mockResolvedValueOnce(null);
+    mockCreateListItem.mockResolvedValueOnce({} as never);
 
     expect(await addToList(LIST_ID, MEDIA_ID)).toEqual({ status: "added", listName: "My List" });
   });
 
-  it("returns error when Prisma create fails", async () => {
+  it("returns error when repository create fails", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListItemFindFirst.mockResolvedValueOnce(null);
-    mockListItemCreate.mockRejectedValueOnce(new Error("DB error"));
+    mockFindListByIdForOwner.mockResolvedValueOnce(listRow() as never);
+    mockFindListItem.mockResolvedValueOnce(null);
+    mockCreateListItem.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await addToList(LIST_ID, MEDIA_ID)).toEqual({ status: "error", message: "Failed to add to list. Please try again." });
   });
@@ -219,14 +222,14 @@ describe("createList", () => {
 
   it("creates a list and returns created", async () => {
     authed();
-    mockListCreate.mockResolvedValueOnce({ id: LIST_ID, name: "My List" } as never);
+    mockCreateList.mockResolvedValueOnce({ id: LIST_ID, name: "My List" } as never);
 
     expect(await createList("My List", "public")).toEqual({ status: "created", id: LIST_ID, name: "My List" });
   });
 
-  it("returns error when Prisma create fails", async () => {
+  it("returns error when repository create fails", async () => {
     authed();
-    mockListCreate.mockRejectedValueOnce(new Error("DB error"));
+    mockCreateList.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await createList("My List", "private")).toEqual({ status: "error", message: "Failed to create list. Please try again." });
   });
@@ -242,22 +245,22 @@ describe("updateList", () => {
 
   it("returns error when list not found", async () => {
     authed();
-    mockListFindFirst.mockResolvedValue(null);
+    mockFindListForUpdate.mockResolvedValue(null);
     expect(await updateList(LIST_ID, { name: "New Name" })).toEqual({ status: "error", message: "List not found" });
   });
 
   it("updates and returns updated", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListUpdate.mockResolvedValueOnce({} as never);
+    mockFindListForUpdate.mockResolvedValueOnce(listRow() as never);
+    mockUpdateList.mockResolvedValueOnce({} as never);
 
     expect(await updateList(LIST_ID, { name: "New Name" })).toEqual({ status: "updated" });
   });
 
-  it("returns error when Prisma update fails", async () => {
+  it("returns error when repository update fails", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListUpdate.mockRejectedValueOnce(new Error("DB error"));
+    mockFindListForUpdate.mockResolvedValueOnce(listRow() as never);
+    mockUpdateList.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await updateList(LIST_ID, { name: "New Name" })).toEqual({ status: "error", message: "Failed to update list. Please try again." });
   });
@@ -273,28 +276,28 @@ describe("deleteList", () => {
 
   it("returns error when list not found", async () => {
     authed();
-    mockListFindFirst.mockResolvedValue(null);
+    mockFindListForUpdate.mockResolvedValue(null);
     expect(await deleteList(LIST_ID)).toEqual({ status: "error", message: "List not found" });
   });
 
   it("returns error when trying to delete default wishlist", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow({ isDefaultWishlist: true }));
+    mockFindListForUpdate.mockResolvedValueOnce(listRow({ isDefaultWishlist: true }) as never);
     expect(await deleteList(LIST_ID)).toEqual({ status: "error", message: "Cannot delete default Watchlist" });
   });
 
   it("deletes and returns deleted", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListDelete.mockResolvedValueOnce({} as never);
+    mockFindListForUpdate.mockResolvedValueOnce(listRow() as never);
+    mockDeleteList.mockResolvedValueOnce({} as never);
 
     expect(await deleteList(LIST_ID)).toEqual({ status: "deleted" });
   });
 
-  it("returns error when Prisma delete fails", async () => {
+  it("returns error when repository delete fails", async () => {
     authed();
-    mockListFindFirst.mockResolvedValueOnce(listRow());
-    mockListDelete.mockRejectedValueOnce(new Error("DB error"));
+    mockFindListForUpdate.mockResolvedValueOnce(listRow() as never);
+    mockDeleteList.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await deleteList(LIST_ID)).toEqual({ status: "error", message: "Failed to delete list. Please try again." });
   });
@@ -310,22 +313,22 @@ describe("removeListItem", () => {
 
   it("returns error when item not found", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValue(null);
+    mockFindListItemWithOwner.mockResolvedValue(null);
     expect(await removeListItem(ITEM_ID)).toEqual({ status: "error", message: "Item not found" });
   });
 
   it("removes and returns removed", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID, listId: LIST_ID } as never);
-    mockListItemDelete.mockResolvedValueOnce({} as never);
+    mockFindListItemWithOwner.mockResolvedValueOnce({ id: ITEM_ID, listId: LIST_ID } as never);
+    mockDeleteListItem.mockResolvedValueOnce({} as never);
 
     expect(await removeListItem(ITEM_ID)).toEqual({ status: "removed" });
   });
 
-  it("returns error when Prisma delete fails", async () => {
+  it("returns error when repository delete fails", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID, listId: LIST_ID } as never);
-    mockListItemDelete.mockRejectedValueOnce(new Error("DB error"));
+    mockFindListItemWithOwner.mockResolvedValueOnce({ id: ITEM_ID, listId: LIST_ID } as never);
+    mockDeleteListItem.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await removeListItem(ITEM_ID)).toEqual({ status: "error", message: "Failed to remove item. Please try again." });
   });
@@ -346,22 +349,22 @@ describe("setListItemScore", () => {
 
   it("returns error when item not found", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValue(null);
+    mockFindListItemWithOwner.mockResolvedValue(null);
     expect(await setListItemScore(ITEM_ID, 3)).toEqual({ status: "error", message: "Item not found" });
   });
 
   it("scores and returns scored", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID } as never);
-    mockListItemScoreUpsert.mockResolvedValueOnce({} as never);
+    mockFindListItemWithOwner.mockResolvedValueOnce({ id: ITEM_ID } as never);
+    mockUpsertListItemScore.mockResolvedValueOnce({} as never);
 
     expect(await setListItemScore(ITEM_ID, 3)).toEqual({ status: "scored" });
   });
 
-  it("returns error when Prisma upsert fails", async () => {
+  it("returns error when repository upsert fails", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID } as never);
-    mockListItemScoreUpsert.mockRejectedValueOnce(new Error("DB error"));
+    mockFindListItemWithOwner.mockResolvedValueOnce({ id: ITEM_ID } as never);
+    mockUpsertListItemScore.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await setListItemScore(ITEM_ID, 3)).toEqual({ status: "error", message: "Failed to save score. Please try again." });
   });
@@ -377,22 +380,22 @@ describe("clearListItemScore", () => {
 
   it("returns error when item not found", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValue(null);
+    mockFindListItemWithOwner.mockResolvedValue(null);
     expect(await clearListItemScore(ITEM_ID)).toEqual({ status: "error", message: "Item not found" });
   });
 
   it("clears and returns cleared", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID } as never);
-    mockListItemScoreDeleteMany.mockResolvedValueOnce({} as never);
+    mockFindListItemWithOwner.mockResolvedValueOnce({ id: ITEM_ID } as never);
+    mockDeleteListItemScore.mockResolvedValueOnce({} as never);
 
     expect(await clearListItemScore(ITEM_ID)).toEqual({ status: "cleared" });
   });
 
-  it("returns error when Prisma deleteMany fails", async () => {
+  it("returns error when repository deleteMany fails", async () => {
     authed();
-    mockListItemFindFirst.mockResolvedValueOnce({ id: ITEM_ID } as never);
-    mockListItemScoreDeleteMany.mockRejectedValueOnce(new Error("DB error"));
+    mockFindListItemWithOwner.mockResolvedValueOnce({ id: ITEM_ID } as never);
+    mockDeleteListItemScore.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await clearListItemScore(ITEM_ID)).toEqual({ status: "error", message: "Failed to clear score. Please try again." });
   });
@@ -414,14 +417,14 @@ describe("createListAndAdd", () => {
 
   it("creates list with item and returns added", async () => {
     authed();
-    mockListCreate.mockResolvedValueOnce({ name: "My List" } as never);
+    mockCreateListAndAdd.mockResolvedValueOnce({ name: "My List" } as never);
 
     expect(await createListAndAdd("My List", MEDIA_ID)).toEqual({ status: "added", listName: "My List" });
   });
 
-  it("returns error when Prisma create fails", async () => {
+  it("returns error when repository create fails", async () => {
     authed();
-    mockListCreate.mockRejectedValueOnce(new Error("DB error"));
+    mockCreateListAndAdd.mockRejectedValueOnce(new Error("DB error"));
 
     expect(await createListAndAdd("My List", MEDIA_ID)).toEqual({ status: "error", message: "Failed to create list. Please try again." });
   });

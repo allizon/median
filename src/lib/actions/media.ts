@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { mediaRepository } from "@/lib/repositories";
 import { MediaType, type Media } from "@prisma/client";
 import { searchTmdb as fetchFromTmdb, fetchTmdbDetails, type TmdbResult } from "@/lib/tmdb";
 
@@ -63,15 +63,7 @@ export async function checkMediaDuplicates(
   type: MediaType,
 ): Promise<DuplicateCandidate[]> {
   try {
-    const results = await prisma.media.findMany({
-      where: {
-        type,
-        title: { contains: title, mode: "insensitive" },
-      },
-      select: { id: true, title: true, year: true, creator: true, type: true },
-      take: 5,
-    });
-    return results;
+    return await mediaRepository.findDuplicates(title, type);
   } catch {
     return [];
   }
@@ -105,27 +97,21 @@ export async function createMedia(
 
   let media: Media;
   try {
-    media = await prisma.media.create({
-      data: {
-        title,
-        type,
-        year: year,
-        creator: creator || null,
-        externalId: externalId ?? null,
-        posterPath: posterPath ?? null,
-        createdById: session.user.id,
-      },
+    media = await mediaRepository.createMedia({
+      title,
+      type,
+      year: year,
+      creator: creator || null,
+      externalId: externalId ?? null,
+      posterPath: posterPath ?? null,
+      createdById: session.user.id,
     });
 
     if (seasons && seasons.length > 0) {
-      await prisma.season.createMany({
-        data: seasons.map((s) => ({
-          mediaId: media.id,
-          number: s.number,
-          title: s.title || null,
-        })),
-        skipDuplicates: true,
-      });
+      await mediaRepository.createSeasons(
+        media.id,
+        seasons.map((s) => ({ number: s.number, title: s.title })),
+      );
     }
   } catch {
     return { status: "error", message: "Failed to create media. Please try again." };
@@ -175,12 +161,7 @@ export async function searchCatalog(query: string): Promise<CatalogResult[]> {
   if (q.length < 1) return [];
 
   try {
-    return await prisma.media.findMany({
-      where: { title: { contains: q, mode: "insensitive" } },
-      orderBy: { title: "asc" },
-      take: 20,
-      select: { id: true, title: true, type: true, year: true, creator: true },
-    });
+    return await mediaRepository.searchCatalog(q);
   } catch {
     return [];
   }
@@ -199,10 +180,7 @@ export async function backfillPosterPath(mediaId: string): Promise<BackfillPoste
     return { status: "error", message: "Not authenticated" };
   }
 
-  const media = await prisma.media.findUnique({
-    where: { id: mediaId },
-    select: { type: true, externalId: true, posterPath: true },
-  });
+  const media = await mediaRepository.findUnique(mediaId);
   if (!media) {
     return { status: "error", message: "Not found" };
   }
@@ -221,10 +199,7 @@ export async function backfillPosterPath(mediaId: string): Promise<BackfillPoste
   }
 
   try {
-    await prisma.media.update({
-      where: { id: mediaId },
-      data: { posterPath: details.posterPath },
-    });
+    await mediaRepository.updatePoster(mediaId, details.posterPath);
   } catch {
     return { status: "error", message: "Failed to save poster. Please try again." };
   }

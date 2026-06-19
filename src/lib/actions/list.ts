@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { listRepository } from "@/lib/repositories";
 import type { ListVisibility } from "@prisma/client";
 import { listDisplayName } from "@/lib/labels";
 
@@ -31,21 +31,7 @@ export async function getUserLists(mediaId: string): Promise<UserList[]> {
 
   let lists;
   try {
-    lists = await prisma.list.findMany({
-      where: { ownerId: session.user.id },
-      orderBy: [{ isDefaultWishlist: "desc" }, { createdAt: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        isDefaultWishlist: true,
-        _count: { select: { items: true } },
-        items: {
-          where: { mediaId },
-          select: { id: true },
-          take: 1,
-        },
-      },
-    });
+    lists = await listRepository.findOwnerLists(session.user.id, mediaId);
   } catch {
     return [];
   }
@@ -67,24 +53,16 @@ export async function addToWishlist(
   const session = await auth();
   if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
 
-  const wishlist = await prisma.list.findFirst({
-    where: { ownerId: session.user.id, isDefaultWishlist: true },
-    select: { id: true, name: true },
-  });
+  const wishlist = await listRepository.findDefaultWishlist(session.user.id);
 
   if (!wishlist) return { status: "error", message: "Watchlist not found" };
 
-  const existing = await prisma.listItem.findFirst({
-    where: { listId: wishlist.id, mediaId },
-    select: { id: true },
-  });
+  const existing = await listRepository.findListItem(wishlist.id, mediaId);
 
   if (existing) return { status: "already_exists" };
 
   try {
-    await prisma.listItem.create({
-      data: { listId: wishlist.id, mediaId, addedById: session.user.id },
-    });
+    await listRepository.createListItem({ listId: wishlist.id, mediaId, addedById: session.user.id });
   } catch {
     return { status: "error", message: "Failed to add to watchlist. Please try again." };
   }
@@ -106,24 +84,16 @@ export async function addToList(
   if (!parsed.success) return { status: "error", message: "Invalid input" };
 
   // Verify the list belongs to the user
-  const list = await prisma.list.findFirst({
-    where: { id: listId, ownerId: session.user.id },
-    select: { id: true, name: true, isDefaultWishlist: true },
-  });
+  const list = await listRepository.findListByIdForOwner(listId, session.user.id);
 
   if (!list) return { status: "error", message: "List not found" };
 
-  const existing = await prisma.listItem.findFirst({
-    where: { listId, mediaId },
-    select: { id: true },
-  });
+  const existing = await listRepository.findListItem(listId, mediaId);
 
   if (existing) return { status: "already_exists" };
 
   try {
-    await prisma.listItem.create({
-      data: { listId, mediaId, addedById: session.user.id },
-    });
+    await listRepository.createListItem({ listId, mediaId, addedById: session.user.id });
   } catch {
     return { status: "error", message: "Failed to add to list. Please try again." };
   }
@@ -151,14 +121,10 @@ export async function createList(
 
   let list;
   try {
-    list = await prisma.list.create({
-      data: {
-        name: parsed.data.name,
-        visibility: parsed.data.visibility,
-        ownerId: session.user.id,
-        isDefaultWishlist: false,
-      },
-      select: { id: true, name: true },
+    list = await listRepository.createList({
+      ownerId: session.user.id,
+      name: parsed.data.name,
+      visibility: parsed.data.visibility,
     });
   } catch {
     return { status: "error", message: "Failed to create list. Please try again." };
@@ -181,10 +147,7 @@ export async function updateList(
   const session = await auth();
   if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
 
-  const list = await prisma.list.findFirst({
-    where: { id, ownerId: session.user.id },
-    select: { isDefaultWishlist: true },
-  });
+  const list = await listRepository.findListForUpdate(id, session.user.id);
   if (!list) return { status: "error", message: "List not found" };
 
   const parsed = z
@@ -200,7 +163,7 @@ export async function updateList(
   if (parsed.data.name !== undefined && !list.isDefaultWishlist) data.name = parsed.data.name;
 
   try {
-    await prisma.list.update({ where: { id }, data });
+    await listRepository.updateList(id, data);
   } catch {
     return { status: "error", message: "Failed to update list. Please try again." };
   }
@@ -220,15 +183,12 @@ export async function deleteList(id: string): Promise<DeleteListResult> {
   const session = await auth();
   if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
 
-  const list = await prisma.list.findFirst({
-    where: { id, ownerId: session.user.id },
-    select: { isDefaultWishlist: true },
-  });
+  const list = await listRepository.findListForUpdate(id, session.user.id);
   if (!list) return { status: "error", message: "List not found" };
   if (list.isDefaultWishlist) return { status: "error", message: "Cannot delete default Watchlist" };
 
   try {
-    await prisma.list.delete({ where: { id } });
+    await listRepository.deleteList(id);
   } catch {
     return { status: "error", message: "Failed to delete list. Please try again." };
   }
@@ -247,14 +207,11 @@ export async function removeListItem(listItemId: string): Promise<RemoveListItem
   const session = await auth();
   if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
 
-  const item = await prisma.listItem.findFirst({
-    where: { id: listItemId, list: { ownerId: session.user.id } },
-    select: { id: true, listId: true },
-  });
+  const item = await listRepository.findListItemWithOwner(listItemId, session.user.id);
   if (!item) return { status: "error", message: "Item not found" };
 
   try {
-    await prisma.listItem.delete({ where: { id: listItemId } });
+    await listRepository.deleteListItem(listItemId);
   } catch {
     return { status: "error", message: "Failed to remove item. Please try again." };
   }
@@ -281,18 +238,11 @@ export async function setListItemScore(
     .safeParse({ listItemId, score });
   if (!parsed.success) return { status: "error", message: "Invalid input" };
 
-  const item = await prisma.listItem.findFirst({
-    where: { id: listItemId, list: { ownerId: session.user.id } },
-    select: { id: true },
-  });
+  const item = await listRepository.findListItemWithOwner(listItemId, session.user.id);
   if (!item) return { status: "error", message: "Item not found" };
 
   try {
-    await prisma.listItemScore.upsert({
-      where: { listItemId_userId: { listItemId, userId: session.user.id } },
-      create: { listItemId, userId: session.user.id, score: parsed.data.score },
-      update: { score: parsed.data.score },
-    });
+    await listRepository.upsertListItemScore({ listItemId, userId: session.user.id, score: parsed.data.score });
   } catch {
     return { status: "error", message: "Failed to save score. Please try again." };
   }
@@ -310,16 +260,11 @@ export async function clearListItemScore(listItemId: string): Promise<ClearListI
   const session = await auth();
   if (!session?.user?.id) return { status: "error", message: "Not authenticated" };
 
-  const item = await prisma.listItem.findFirst({
-    where: { id: listItemId, list: { ownerId: session.user.id } },
-    select: { id: true },
-  });
+  const item = await listRepository.findListItemWithOwner(listItemId, session.user.id);
   if (!item) return { status: "error", message: "Item not found" };
 
   try {
-    await prisma.listItemScore.deleteMany({
-      where: { listItemId, userId: session.user.id },
-    });
+    await listRepository.deleteListItemScore(listItemId, session.user.id);
   } catch {
     return { status: "error", message: "Failed to clear score. Please try again." };
   }
@@ -343,17 +288,11 @@ export async function createListAndAdd(
 
   let list;
   try {
-    list = await prisma.list.create({
-      data: {
-        name: parsed.data.name,
-        ownerId: session.user.id,
-        visibility: "private",
-        isDefaultWishlist: false,
-        items: {
-          create: { mediaId: parsed.data.mediaId, addedById: session.user.id },
-        },
-      },
-      select: { name: true },
+    list = await listRepository.createListAndAdd({
+      name: parsed.data.name,
+      ownerId: session.user.id,
+      mediaId: parsed.data.mediaId,
+      addedById: session.user.id,
     });
   } catch {
     return { status: "error", message: "Failed to create list. Please try again." };

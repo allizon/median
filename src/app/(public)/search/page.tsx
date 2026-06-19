@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { mediaRepository } from "@/lib/repositories";
 import { MediaType } from "@prisma/client";
 import { CatalogSearch } from "@/components/catalog-search";
 
@@ -31,20 +31,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   };
 
   const [results, totalCount] = await Promise.all([
-    prisma.media.findMany({
-      where,
-      select: {
-        id: true,
-        title: true,
-        year: true,
-        creator: true,
-        type: true,
-      },
-      orderBy: { title: "asc" },
-      ...(take !== undefined ? { take } : {}),
-      skip,
-    }),
-    prisma.media.count({ where }),
+    mediaRepository.findPaginated(where, skip, take),
+    mediaRepository.count(where),
   ]);
 
   const pageSize = perPage === "all" ? (totalCount || 1) : parseInt(perPage, 10);
@@ -54,13 +42,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Pre-load wishlist state for each result so buttons render correctly
   let wishlistMediaIds = new Set<string>();
   if (session?.user?.id && results.length > 0) {
-    const wishlistItems = await prisma.listItem.findMany({
-      where: {
-        list: { ownerId: session.user.id, isDefaultWishlist: true },
-        mediaId: { in: results.map((r) => r.id) },
-      },
-      select: { mediaId: true },
-    });
+    const wishlistItems = await mediaRepository.findWishlistItems(
+      session.user.id,
+      results.map((r) => r.id),
+    );
     wishlistMediaIds = new Set(wishlistItems.map((i) => i.mediaId));
   }
 
