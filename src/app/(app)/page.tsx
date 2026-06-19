@@ -16,10 +16,7 @@ export default async function HomePage() {
   const [lists, wishlistItems, wishlistMediaIds] = await Promise.all([
     prisma.list.findMany({
       where: {
-        OR: [
-          { ownerId: userId },
-          { members: { some: { userId } } },
-        ],
+        OR: [{ ownerId: userId }, { members: { some: { userId } } }],
       },
       orderBy: [{ isDefaultWishlist: "desc" }, { updatedAt: "desc" }],
       select: {
@@ -74,7 +71,7 @@ export default async function HomePage() {
       </p>
 
       {/* CTAs */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {wishlist ? (
           <AddToWatchlistButton
             wishlistId={wishlist.id}
@@ -83,17 +80,14 @@ export default async function HomePage() {
         ) : (
           <Link
             href="/search"
-            className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full justify-center")}
+            className={cn(
+              buttonVariants({ variant: "default", size: "lg" }),
+              "w-full justify-center",
+            )}
           >
-            + Add to Watchlist
+            + Add Something to Watchlist
           </Link>
         )}
-        <Link
-          href="/search"
-          className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full justify-center")}
-        >
-          Browse catalog
-        </Link>
       </div>
 
       {/* Up Next — full width, hero widget */}
@@ -112,10 +106,7 @@ export default async function HomePage() {
           )}
         </div>
         <div className="px-4 pb-4">
-          <WishlistWidget
-            initialItems={typedWishlistItems}
-            wishlistId={wishlist?.id ?? null}
-          />
+          <WishlistWidget initialItems={typedWishlistItems} wishlistId={wishlist?.id ?? null} />
         </div>
       </section>
 
@@ -130,7 +121,9 @@ export default async function HomePage() {
         {nonWishlistLists.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No lists yet.{" "}
-            <span className="text-primary">Create one above to organize what you want to watch.</span>
+            <span className="text-primary">
+              Create one above to organize what you want to watch.
+            </span>
           </p>
         ) : (
           <ul className="space-y-0.5">
@@ -142,9 +135,7 @@ export default async function HomePage() {
                 >
                   <span className="truncate">{list.name}</span>
                   <div className="flex items-center gap-2 shrink-0 text-muted-foreground text-xs">
-                    {list._count.members > 0 && (
-                      <span>{list._count.members + 1} members</span>
-                    )}
+                    {list._count.members > 0 && <span>{list._count.members + 1} members</span>}
                     <span>{list._count.items} items</span>
                   </div>
                 </Link>

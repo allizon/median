@@ -18,7 +18,7 @@ export function AddToWatchlistButton({ wishlistId, existingMediaIds }: AddToWatc
   return (
     <>
       <Button size="lg" className="w-full justify-center" onClick={() => setOpen(true)}>
-        + Add to Watchlist
+        + Add Something to Your Watchlist
       </Button>
       <AddToListSearchModal
         listId={wishlistId}
