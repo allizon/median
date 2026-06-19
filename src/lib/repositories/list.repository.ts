@@ -158,7 +158,11 @@ export class ListRepository {
         items: {
           take: 5,
           orderBy: { addedAt: "asc" },
-          select: { media: { select: { id: true, title: true, type: true } } },
+          select: {
+            media: {
+              select: { id: true, title: true, type: true, posterPath: true, externalId: true },
+            },
+          },
         },
       },
     });
@@ -179,7 +183,11 @@ export class ListRepository {
         items: {
           take: 5,
           orderBy: { addedAt: "asc" },
-          select: { media: { select: { id: true, title: true, type: true } } },
+          select: {
+            media: {
+              select: { id: true, title: true, type: true, posterPath: true, externalId: true },
+            },
+          },
         },
       },
     });
