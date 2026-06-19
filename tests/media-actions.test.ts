@@ -4,17 +4,13 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    media: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-      create: vi.fn(),
-      findMany: vi.fn(),
-    },
-    season: {
-      createMany: vi.fn(),
-    },
+vi.mock("@/lib/repositories", () => ({
+  mediaRepository: {
+    findUnique: vi.fn(),
+    updatePoster: vi.fn(),
+    createMedia: vi.fn(),
+    createSeasons: vi.fn(),
+    findDuplicates: vi.fn(),
   },
 }));
 
@@ -28,16 +24,16 @@ vi.mock("next/cache", () => ({
 }));
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { mediaRepository } from "@/lib/repositories";
 import { fetchTmdbDetails } from "@/lib/tmdb";
 import { MediaType } from "@prisma/client";
 import { backfillPosterPath, createMedia } from "@/lib/actions/media";
 
 const mockAuth = vi.mocked(auth);
-const mockFindUnique = vi.mocked(prisma.media.findUnique);
-const mockUpdate = vi.mocked(prisma.media.update);
-const mockCreate = vi.mocked(prisma.media.create);
-const mockFindMany = vi.mocked(prisma.media.findMany);
+const mockFindUnique = vi.mocked(mediaRepository.findUnique);
+const mockUpdatePoster = vi.mocked(mediaRepository.updatePoster);
+const mockCreateMedia = vi.mocked(mediaRepository.createMedia);
+const mockFindDuplicates = vi.mocked(mediaRepository.findDuplicates);
 const mockFetchTmdbDetails = vi.mocked(fetchTmdbDetails);
 
 function mockMedia(row: { type: string; externalId: string | null; posterPath: string | null }) {
@@ -86,15 +82,12 @@ describe("backfillPosterPath", () => {
       posterPath: "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
       posterUrl: "https://image.tmdb.org/t/p/w185/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
     });
-    mockUpdate.mockResolvedValue({} as never);
+    mockUpdatePoster.mockResolvedValue({} as never);
 
     const result = await backfillPosterPath("media-1");
 
     expect(mockFetchTmdbDetails).toHaveBeenCalledWith("1396", "tv_show");
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "media-1" },
-      data: { posterPath: "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg" },
-    });
+    expect(mockUpdatePoster).toHaveBeenCalledWith("media-1", "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg");
     expect(result).toEqual({ status: "ok", posterPath: "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg" });
   });
 
@@ -111,7 +104,7 @@ describe("backfillPosterPath", () => {
 
     const result = await backfillPosterPath("media-1");
     expect(result).toEqual({ status: "skipped" });
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockUpdatePoster).not.toHaveBeenCalled();
   });
 
   it("returns an error when Prisma update fails", async () => {
@@ -124,7 +117,7 @@ describe("backfillPosterPath", () => {
       posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
       posterUrl: "https://image.tmdb.org/t/p/w185/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
     });
-    mockUpdate.mockRejectedValue(new Error("DB connection failed"));
+    mockUpdatePoster.mockRejectedValue(new Error("DB connection failed"));
 
     const result = await backfillPosterPath("media-1");
 
@@ -144,7 +137,7 @@ describe("backfillPosterPath", () => {
 
     const result = await backfillPosterPath("media-1");
     expect(result).toEqual({ status: "skipped" });
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockUpdatePoster).not.toHaveBeenCalled();
   });
 });
 
@@ -159,28 +152,28 @@ describe("createMedia", () => {
     mockAuth.mockResolvedValue(null as never);
     const result = await createMedia({ title: "Fight Club", type: MediaType.movie });
     expect(result).toEqual({ status: "error", message: "Not authenticated" });
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCreateMedia).not.toHaveBeenCalled();
   });
 
   it("returns an error for invalid input", async () => {
     const result = await createMedia({ title: "", type: MediaType.movie } as never);
     expect(result).toEqual({ status: "error", message: "Title is required" });
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCreateMedia).not.toHaveBeenCalled();
   });
 
   it("returns duplicates when matching items exist", async () => {
     const candidate = { id: "media-1", title: "Fight Club", year: 1999, creator: "David Fincher", type: MediaType.movie };
-    mockFindMany.mockResolvedValue([candidate]);
+    mockFindDuplicates.mockResolvedValue([candidate]);
 
     const result = await createMedia({ title: "Fight Club", type: MediaType.movie });
 
     expect(result).toEqual({ status: "duplicates", candidates: [candidate] });
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCreateMedia).not.toHaveBeenCalled();
   });
 
   it("returns an error when Prisma create fails", async () => {
-    mockFindMany.mockResolvedValue([]);
-    mockCreate.mockRejectedValue(new Error("DB connection failed"));
+    mockFindDuplicates.mockResolvedValue([]);
+    mockCreateMedia.mockRejectedValue(new Error("DB connection failed"));
 
     const result = await createMedia({ title: "Fight Club", type: MediaType.movie });
 
@@ -188,8 +181,8 @@ describe("createMedia", () => {
   });
 
   it("creates a TV show with seasons and returns the new media id", async () => {
-    mockFindMany.mockResolvedValue([]);
-    mockCreate.mockResolvedValue({ id: "media-42" } as never);
+    mockFindDuplicates.mockResolvedValue([]);
+    mockCreateMedia.mockResolvedValue({ id: "media-42" } as never);
 
     const result = await createMedia({
       title: "Breaking Bad",
@@ -198,18 +191,16 @@ describe("createMedia", () => {
     });
 
     expect(result).toEqual({ status: "created", mediaId: "media-42" });
-    expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ title: "Breaking Bad", type: MediaType.tv_show }),
-      }),
+    expect(mockCreateMedia).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Breaking Bad", type: MediaType.tv_show }),
     );
   });
 
   it("returns an error when Prisma season createMany fails", async () => {
-    mockFindMany.mockResolvedValue([]);
-    mockCreate.mockResolvedValue({ id: "media-42" } as never);
-    const { prisma: prismaMock } = await import("@/lib/prisma");
-    vi.mocked(prismaMock.season.createMany).mockRejectedValue(new Error("DB constraint"));
+    mockFindDuplicates.mockResolvedValue([]);
+    mockCreateMedia.mockResolvedValue({ id: "media-42" } as never);
+    const mockCreateSeasons = vi.mocked(mediaRepository.createSeasons);
+    mockCreateSeasons.mockRejectedValue(new Error("DB constraint"));
 
     const result = await createMedia({
       title: "Breaking Bad",
@@ -229,13 +220,13 @@ describe("createMedia", () => {
     });
 
     expect(result.status).toBe("error");
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCreateMedia).not.toHaveBeenCalled();
   });
 
   it("accepts a posterPath that matches the TMDB path format", async () => {
-    mockFindMany.mockResolvedValue([]);
+    mockFindDuplicates.mockResolvedValue([]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockCreate.mockResolvedValue({ id: "media-1" } as any);
+    mockCreateMedia.mockResolvedValue({ id: "media-1" } as any);
 
     const result = await createMedia({
       title: "Fight Club",
@@ -245,10 +236,8 @@ describe("createMedia", () => {
     });
 
     expect(result).toEqual({ status: "created", mediaId: "media-1" });
-    expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg" }),
-      }),
+    expect(mockCreateMedia).toHaveBeenCalledWith(
+      expect.objectContaining({ posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg" }),
     );
   });
 });

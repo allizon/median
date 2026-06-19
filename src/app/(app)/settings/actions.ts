@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { userRepository } from "@/lib/repositories";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -46,23 +46,16 @@ export async function updateProfileAction(
 
   const { username, displayName, showInProgressOnProfile } = parsed.data;
 
-  const existing = await prisma.user.findFirst({
-    where: { username, id: { not: session.user.id } },
-    select: { id: true },
-  });
+  const existing = await userRepository.findFirstByUsernameExcludingId(username, session.user.id);
 
   if (existing) {
     return { errors: { username: ["That username is already taken"] } };
   }
 
-  const updated = await prisma.user.update({
-    where: { id: session.user.id },
-    data: {
-      username,
-      displayName: displayName ?? null,
-      showInProgressOnProfile,
-    },
-    select: { username: true },
+  const updated = await userRepository.update(session.user.id, {
+    username,
+    displayName: displayName ?? null,
+    showInProgressOnProfile,
   });
 
   revalidatePath(`/profile/${updated.username}`);

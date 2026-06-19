@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { listRepository } from "@/lib/repositories";
 import { revalidatePath } from "next/cache";
 
 export async function updateFeaturedListsAction(
@@ -9,10 +9,7 @@ export async function updateFeaturedListsAction(
 ) {
   await Promise.all(
     updates.map(({ id, featuredOnProfile, profilePosition }) =>
-      prisma.list.updateMany({
-        where: { id, ownerId },
-        data: { featuredOnProfile, profilePosition },
-      })
+      listRepository.updateListFeatured(id, ownerId, { featuredOnProfile, profilePosition })
     )
   );
   revalidatePath(`/profile/${ownerId}`);

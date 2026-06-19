@@ -1,41 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { userRepository, profileRepository, diaryEntryRepository, listRepository } from "@/lib/repositories";
+import type { ListVisibility } from "@prisma/client";
 import { FeaturedListsEditor } from "./FeaturedListsEditor";
 import { AddMediaButton } from "./AddMediaButton";
 import { NewListButton } from "@/components/new-list-button";
 import { listDisplayName } from "@/lib/labels";
-
-type ViewerRole = "owner" | "friend" | "stranger" | "logged-out";
-
-async function getViewerRole(viewerId: string | null, profileUserId: string): Promise<ViewerRole> {
-  if (!viewerId) return "logged-out";
-  if (viewerId === profileUserId) return "owner";
-
-  const friendship = await prisma.friendship.findFirst({
-    where: {
-      status: "accepted",
-      OR: [
-        { requesterId: viewerId, addresseeId: profileUserId },
-        { requesterId: profileUserId, addresseeId: viewerId },
-      ],
-    },
-  });
-
-  return friendship ? "friend" : "stranger";
-}
-
-async function getFriendshipState(viewerId: string, profileUserId: string) {
-  return prisma.friendship.findFirst({
-    where: {
-      OR: [
-        { requesterId: viewerId, addresseeId: profileUserId },
-        { requesterId: profileUserId, addresseeId: viewerId },
-      ],
-    },
-  });
-}
 
 export default async function ProfilePage({
   params,
@@ -44,121 +15,45 @@ export default async function ProfilePage({
 }) {
   const { username } = await params;
 
-  const profileUser = await prisma.user.findUnique({
-    where: { username },
-    select: {
-      id: true,
-      username: true,
-      displayName: true,
-      showInProgressOnProfile: true,
-      createdAt: true,
-    },
-  });
+  const profileUser = await userRepository.findUniqueByUsername(username);
 
   if (!profileUser) notFound();
 
   const session = await auth();
   const viewerId = session?.user?.id ?? null;
-  const role = await getViewerRole(viewerId, profileUser.id);
+  const role = await profileRepository.getViewerRole(viewerId, profileUser.id);
 
   const canSeeStats = role === "owner" || role === "friend";
 
   const [stats, featuredLists, friendshipState] = await Promise.all([
     canSeeStats
-      ? prisma.diaryEntry.groupBy({
-          by: ["mediaId"],
-          where: {
-            userId: profileUser.id,
-            status: "finished",
-            seasonId: null,
-          },
-          _count: { mediaId: true },
-        }).then(async () => {
-          const counts = await prisma.$queryRaw<
-            { type: string; count: bigint }[]
-          >`
-            SELECT m.type, COUNT(*)::int as count
-            FROM "DiaryEntry" de
-            JOIN "Media" m ON m.id = de."mediaId"
-            WHERE de."userId" = ${profileUser.id}
-              AND de.status = 'finished'
-              AND de."seasonId" IS NULL
-            GROUP BY m.type
-          `;
-          const avgRating = await prisma.diaryEntry.aggregate({
-            where: {
-              userId: profileUser.id,
-              status: "finished",
-              seasonId: null,
-              rating: { not: null },
-            },
-            _avg: { rating: true },
-          });
+      ? (async () => {
+          const counts = await diaryEntryRepository.getFinishedCountsByType(profileUser.id);
+          const avgRating = await diaryEntryRepository.getAverageRating(profileUser.id);
           const inProgress = profileUser.showInProgressOnProfile
-            ? await prisma.diaryEntry.count({
-                where: {
-                  userId: profileUser.id,
-                  status: "in_progress",
-                  seasonId: null,
-                },
-              })
+            ? await diaryEntryRepository.getInProgressCount(profileUser.id)
             : null;
-          return { counts, avgRating: avgRating._avg.rating, inProgress };
-        })
+          return { counts, avgRating, inProgress };
+        })()
       : null,
 
     canSeeStats
-      ? prisma.list.findMany({
-          where: {
-            ownerId: profileUser.id,
-            featuredOnProfile: true,
-            visibility: role === "friend" || role === "owner" ? { in: ["public", "friends"] } : "public",
-          },
-          orderBy: { profilePosition: "asc" },
-          select: {
-            id: true,
-            name: true,
-            isDefaultWishlist: true,
-            visibility: true,
-            featuredOnProfile: true,
-            profilePosition: true,
-            _count: { select: { items: true } },
-            items: {
-              take: 5,
-              orderBy: { addedAt: "asc" },
-              select: { media: { select: { id: true, title: true, type: true } } },
-            },
-          },
-        })
+      ? listRepository.findFeaturedLists(
+          profileUser.id,
+          role === "friend" || role === "owner"
+            ? { in: ["public" as ListVisibility, "friends" as ListVisibility] }
+            : "public",
+        )
       : null,
 
     role !== "owner" && viewerId
-      ? getFriendshipState(viewerId, profileUser.id)
+      ? profileRepository.getFriendshipState(viewerId, profileUser.id)
       : null,
   ]);
 
   const allOwnerLists =
     role === "owner"
-      ? await prisma.list.findMany({
-          where: {
-            ownerId: profileUser.id,
-          },
-          orderBy: { createdAt: "asc" },
-          select: {
-            id: true,
-            name: true,
-            isDefaultWishlist: true,
-            visibility: true,
-            featuredOnProfile: true,
-            profilePosition: true,
-            _count: { select: { items: true } },
-            items: {
-              take: 5,
-              orderBy: { addedAt: "asc" },
-              select: { media: { select: { id: true, title: true, type: true } } },
-            },
-          },
-        })
+      ? await listRepository.findAllOwnerLists(profileUser.id)
       : null;
 
   const memberSince = profileUser.createdAt.toLocaleDateString("en-US", {
@@ -168,7 +63,7 @@ export default async function ProfilePage({
 
   const countByType = (type: string) =>
     Number(
-      (stats?.counts as { type: string; count: bigint }[] | undefined)?.find(
+      (stats?.counts as { type: string; count: number }[] | undefined)?.find(
         (c) => c.type === type
       )?.count ?? 0
     );
