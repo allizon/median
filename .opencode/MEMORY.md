@@ -21,6 +21,11 @@ Before every commit, run:
 
 This prevents silent failures (e.g., a file rename that only deletes the old file but never commits the new one).
 
+## TypeScript annotations
+
+Always add explicit type annotations. Never leave `let x;` without a type — TypeScript infers `any` when the assignment is inside a `try` block or otherwise conditional. Import the type and annotate: `let x: SomeType;`.
+
 ## Recent work
 
 - 2026-06-18: Implemented #37 — dashboard wishlist button opens modal instead of navigating to /search
+- 2026-06-18: Fix #53 — wrapped Prisma calls in try/catch, but missed adding `Media` type annotation on `let media;` causing a build error. Fixed by importing `type Media` from `@prisma/client`.

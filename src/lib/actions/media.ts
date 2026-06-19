@@ -4,7 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { MediaType } from "@prisma/client";
+import { MediaType, type Media } from "@prisma/client";
 import { searchTmdb as fetchFromTmdb, fetchTmdbDetails, type TmdbResult } from "@/lib/tmdb";
 
 export type { TmdbResult } from "@/lib/tmdb";
@@ -62,15 +62,19 @@ export async function checkMediaDuplicates(
   title: string,
   type: MediaType,
 ): Promise<DuplicateCandidate[]> {
-  const results = await prisma.media.findMany({
-    where: {
-      type,
-      title: { contains: title, mode: "insensitive" },
-    },
-    select: { id: true, title: true, year: true, creator: true, type: true },
-    take: 5,
-  });
-  return results;
+  try {
+    const results = await prisma.media.findMany({
+      where: {
+        type,
+        title: { contains: title, mode: "insensitive" },
+      },
+      select: { id: true, title: true, year: true, creator: true, type: true },
+      take: 5,
+    });
+    return results;
+  } catch {
+    return [];
+  }
 }
 
 // ── Create media item ─────────────────────────────────────────────────────────
@@ -99,27 +103,32 @@ export async function createMedia(
     }
   }
 
-  const media = await prisma.media.create({
-    data: {
-      title,
-      type,
-      year: year,
-      creator: creator || null,
-      externalId: externalId ?? null,
-      posterPath: posterPath ?? null,
-      createdById: session.user.id,
-    },
-  });
-
-  if (seasons && seasons.length > 0) {
-    await prisma.season.createMany({
-      data: seasons.map((s) => ({
-        mediaId: media.id,
-        number: s.number,
-        title: s.title || null,
-      })),
-      skipDuplicates: true,
+  let media: Media;
+  try {
+    media = await prisma.media.create({
+      data: {
+        title,
+        type,
+        year: year,
+        creator: creator || null,
+        externalId: externalId ?? null,
+        posterPath: posterPath ?? null,
+        createdById: session.user.id,
+      },
     });
+
+    if (seasons && seasons.length > 0) {
+      await prisma.season.createMany({
+        data: seasons.map((s) => ({
+          mediaId: media.id,
+          number: s.number,
+          title: s.title || null,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  } catch {
+    return { status: "error", message: "Failed to create media. Please try again." };
   }
 
   revalidatePath("/search");
@@ -165,12 +174,16 @@ export async function searchCatalog(query: string): Promise<CatalogResult[]> {
   const q = query.trim();
   if (q.length < 1) return [];
 
-  return prisma.media.findMany({
-    where: { title: { contains: q, mode: "insensitive" } },
-    orderBy: { title: "asc" },
-    take: 20,
-    select: { id: true, title: true, type: true, year: true, creator: true },
-  });
+  try {
+    return await prisma.media.findMany({
+      where: { title: { contains: q, mode: "insensitive" } },
+      orderBy: { title: "asc" },
+      take: 20,
+      select: { id: true, title: true, type: true, year: true, creator: true },
+    });
+  } catch {
+    return [];
+  }
 }
 
 // ── Poster backfill ───────────────────────────────────────────────────────────
@@ -207,10 +220,14 @@ export async function backfillPosterPath(mediaId: string): Promise<BackfillPoste
     return { status: "skipped" };
   }
 
-  await prisma.media.update({
-    where: { id: mediaId },
-    data: { posterPath: details.posterPath },
-  });
+  try {
+    await prisma.media.update({
+      where: { id: mediaId },
+      data: { posterPath: details.posterPath },
+    });
+  } catch {
+    return { status: "error", message: "Failed to save poster. Please try again." };
+  }
 
   revalidatePath(`/media/${mediaId}`);
   return { status: "ok", posterPath: details.posterPath };

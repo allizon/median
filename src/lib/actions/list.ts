@@ -29,21 +29,26 @@ export async function getUserLists(mediaId: string): Promise<UserList[]> {
   const session = await auth();
   if (!session?.user?.id) return [];
 
-  const lists = await prisma.list.findMany({
-    where: { ownerId: session.user.id },
-    orderBy: [{ isDefaultWishlist: "desc" }, { createdAt: "asc" }],
-    select: {
-      id: true,
-      name: true,
-      isDefaultWishlist: true,
-      _count: { select: { items: true } },
-      items: {
-        where: { mediaId },
-        select: { id: true },
-        take: 1,
+  let lists;
+  try {
+    lists = await prisma.list.findMany({
+      where: { ownerId: session.user.id },
+      orderBy: [{ isDefaultWishlist: "desc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        isDefaultWishlist: true,
+        _count: { select: { items: true } },
+        items: {
+          where: { mediaId },
+          select: { id: true },
+          take: 1,
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return [];
+  }
 
   return lists.map((l) => ({
     id: l.id,
@@ -76,9 +81,13 @@ export async function addToWishlist(
 
   if (existing) return { status: "already_exists" };
 
-  await prisma.listItem.create({
-    data: { listId: wishlist.id, mediaId, addedById: session.user.id },
-  });
+  try {
+    await prisma.listItem.create({
+      data: { listId: wishlist.id, mediaId, addedById: session.user.id },
+    });
+  } catch {
+    return { status: "error", message: "Failed to add to watchlist. Please try again." };
+  }
 
   return { status: "added", listName: wishlist.name };
 }
@@ -111,9 +120,13 @@ export async function addToList(
 
   if (existing) return { status: "already_exists" };
 
-  await prisma.listItem.create({
-    data: { listId, mediaId, addedById: session.user.id },
-  });
+  try {
+    await prisma.listItem.create({
+      data: { listId, mediaId, addedById: session.user.id },
+    });
+  } catch {
+    return { status: "error", message: "Failed to add to list. Please try again." };
+  }
 
   return { status: "added", listName: listDisplayName(list) };
 }
@@ -136,15 +149,20 @@ export async function createList(
     .safeParse({ name, visibility });
   if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const list = await prisma.list.create({
-    data: {
-      name: parsed.data.name,
-      visibility: parsed.data.visibility,
-      ownerId: session.user.id,
-      isDefaultWishlist: false,
-    },
-    select: { id: true, name: true },
-  });
+  let list;
+  try {
+    list = await prisma.list.create({
+      data: {
+        name: parsed.data.name,
+        visibility: parsed.data.visibility,
+        ownerId: session.user.id,
+        isDefaultWishlist: false,
+      },
+      select: { id: true, name: true },
+    });
+  } catch {
+    return { status: "error", message: "Failed to create list. Please try again." };
+  }
 
   revalidatePath("/");
   return { status: "created", id: list.id, name: list.name };
@@ -181,7 +199,11 @@ export async function updateList(
   if (parsed.data.visibility !== undefined) data.visibility = parsed.data.visibility;
   if (parsed.data.name !== undefined && !list.isDefaultWishlist) data.name = parsed.data.name;
 
-  await prisma.list.update({ where: { id }, data });
+  try {
+    await prisma.list.update({ where: { id }, data });
+  } catch {
+    return { status: "error", message: "Failed to update list. Please try again." };
+  }
 
   revalidatePath("/");
   revalidatePath(`/lists/${id}`);
@@ -205,7 +227,11 @@ export async function deleteList(id: string): Promise<DeleteListResult> {
   if (!list) return { status: "error", message: "List not found" };
   if (list.isDefaultWishlist) return { status: "error", message: "Cannot delete default Watchlist" };
 
-  await prisma.list.delete({ where: { id } });
+  try {
+    await prisma.list.delete({ where: { id } });
+  } catch {
+    return { status: "error", message: "Failed to delete list. Please try again." };
+  }
 
   revalidatePath("/");
   return { status: "deleted" };
@@ -227,7 +253,11 @@ export async function removeListItem(listItemId: string): Promise<RemoveListItem
   });
   if (!item) return { status: "error", message: "Item not found" };
 
-  await prisma.listItem.delete({ where: { id: listItemId } });
+  try {
+    await prisma.listItem.delete({ where: { id: listItemId } });
+  } catch {
+    return { status: "error", message: "Failed to remove item. Please try again." };
+  }
 
   revalidatePath(`/lists/${item.listId}`);
   return { status: "removed" };
@@ -257,11 +287,15 @@ export async function setListItemScore(
   });
   if (!item) return { status: "error", message: "Item not found" };
 
-  await prisma.listItemScore.upsert({
-    where: { listItemId_userId: { listItemId, userId: session.user.id } },
-    create: { listItemId, userId: session.user.id, score: parsed.data.score },
-    update: { score: parsed.data.score },
-  });
+  try {
+    await prisma.listItemScore.upsert({
+      where: { listItemId_userId: { listItemId, userId: session.user.id } },
+      create: { listItemId, userId: session.user.id, score: parsed.data.score },
+      update: { score: parsed.data.score },
+    });
+  } catch {
+    return { status: "error", message: "Failed to save score. Please try again." };
+  }
 
   return { status: "scored" };
 }
@@ -282,9 +316,13 @@ export async function clearListItemScore(listItemId: string): Promise<ClearListI
   });
   if (!item) return { status: "error", message: "Item not found" };
 
-  await prisma.listItemScore.deleteMany({
-    where: { listItemId, userId: session.user.id },
-  });
+  try {
+    await prisma.listItemScore.deleteMany({
+      where: { listItemId, userId: session.user.id },
+    });
+  } catch {
+    return { status: "error", message: "Failed to clear score. Please try again." };
+  }
 
   return { status: "cleared" };
 }
@@ -303,18 +341,23 @@ export async function createListAndAdd(
     .safeParse({ name, mediaId });
   if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const list = await prisma.list.create({
-    data: {
-      name: parsed.data.name,
-      ownerId: session.user.id,
-      visibility: "private",
-      isDefaultWishlist: false,
-      items: {
-        create: { mediaId: parsed.data.mediaId, addedById: session.user.id },
+  let list;
+  try {
+    list = await prisma.list.create({
+      data: {
+        name: parsed.data.name,
+        ownerId: session.user.id,
+        visibility: "private",
+        isDefaultWishlist: false,
+        items: {
+          create: { mediaId: parsed.data.mediaId, addedById: session.user.id },
+        },
       },
-    },
-    select: { name: true },
-  });
+      select: { name: true },
+    });
+  } catch {
+    return { status: "error", message: "Failed to create list. Please try again." };
+  }
 
   return { status: "added", listName: list.name };
 }
