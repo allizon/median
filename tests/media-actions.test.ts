@@ -114,6 +114,23 @@ describe("backfillPosterPath", () => {
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
+  it("returns an error when Prisma update fails", async () => {
+    mockMedia({ type: "movie", externalId: "550", posterPath: null });
+    mockFetchTmdbDetails.mockResolvedValue({
+      externalId: "550",
+      title: "Fight Club",
+      year: 1999,
+      type: "movie",
+      posterPath: "/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+      posterUrl: "https://image.tmdb.org/t/p/w185/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg",
+    });
+    mockUpdate.mockRejectedValue(new Error("DB connection failed"));
+
+    const result = await backfillPosterPath("media-1");
+
+    expect(result).toEqual({ status: "error", message: "Failed to save poster. Please try again." });
+  });
+
   it("rejects a malformed posterPath rather than persisting it", async () => {
     mockMedia({ type: "movie", externalId: "550", posterPath: null });
     mockFetchTmdbDetails.mockResolvedValue({
@@ -136,6 +153,71 @@ describe("createMedia", () => {
     vi.clearAllMocks();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockAuth.mockResolvedValue({ user: { id: "user-1" } } as any);
+  });
+
+  it("returns an error when not authenticated", async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const result = await createMedia({ title: "Fight Club", type: MediaType.movie });
+    expect(result).toEqual({ status: "error", message: "Not authenticated" });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns an error for invalid input", async () => {
+    const result = await createMedia({ title: "", type: MediaType.movie } as never);
+    expect(result).toEqual({ status: "error", message: "Title is required" });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns duplicates when matching items exist", async () => {
+    const candidate = { id: "media-1", title: "Fight Club", year: 1999, creator: "David Fincher", type: MediaType.movie };
+    mockFindMany.mockResolvedValue([candidate]);
+
+    const result = await createMedia({ title: "Fight Club", type: MediaType.movie });
+
+    expect(result).toEqual({ status: "duplicates", candidates: [candidate] });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns an error when Prisma create fails", async () => {
+    mockFindMany.mockResolvedValue([]);
+    mockCreate.mockRejectedValue(new Error("DB connection failed"));
+
+    const result = await createMedia({ title: "Fight Club", type: MediaType.movie });
+
+    expect(result).toEqual({ status: "error", message: "Failed to create media. Please try again." });
+  });
+
+  it("creates a TV show with seasons and returns the new media id", async () => {
+    mockFindMany.mockResolvedValue([]);
+    mockCreate.mockResolvedValue({ id: "media-42" } as never);
+
+    const result = await createMedia({
+      title: "Breaking Bad",
+      type: MediaType.tv_show,
+      seasons: [{ number: 1 }, { number: 2 }],
+    });
+
+    expect(result).toEqual({ status: "created", mediaId: "media-42" });
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ title: "Breaking Bad", type: MediaType.tv_show }),
+      }),
+    );
+  });
+
+  it("returns an error when Prisma season createMany fails", async () => {
+    mockFindMany.mockResolvedValue([]);
+    mockCreate.mockResolvedValue({ id: "media-42" } as never);
+    const { prisma: prismaMock } = await import("@/lib/prisma");
+    vi.mocked(prismaMock.season.createMany).mockRejectedValue(new Error("DB constraint"));
+
+    const result = await createMedia({
+      title: "Breaking Bad",
+      type: MediaType.tv_show,
+      seasons: [{ number: 1 }],
+    });
+
+    expect(result).toEqual({ status: "error", message: "Failed to create media. Please try again." });
   });
 
   it("rejects a posterPath that doesn't look like a TMDB path", async () => {
