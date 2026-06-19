@@ -26,7 +26,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const skip = perPage === "all" ? 0 : (page - 1) * take!;
 
   const where = {
-    ...(query ? { title: { contains: query, mode: "insensitive" } } : {}),
+    ...(query ? { title: { contains: query, mode: "insensitive" as const } } : {}),
     ...(typeFilter ? { type: typeFilter } : {}),
   };
 
