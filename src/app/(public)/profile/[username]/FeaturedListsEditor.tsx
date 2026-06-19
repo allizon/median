@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { updateFeaturedListsAction } from "./actions";
 import { listDisplayName } from "@/lib/labels";
 
+const POSTER_BASE = "https://image.tmdb.org/t/p/w92";
+
 type ListItem = {
-  media: { id: string; title: string; type: string };
+  media: { id: string; title: string; type: string; posterPath: string | null };
 };
 
 type List = {
@@ -93,13 +96,32 @@ export function FeaturedListsEditor({ lists, ownerId, username }: { lists: List[
                   <span className="text-xs text-muted-foreground shrink-0">{list._count.items} items</span>
                 </div>
                 {list.items.length > 0 && (
-                  <ul className="space-y-0.5">
-                    {list.items.map((item) => (
-                      <li key={item.media.id} className="text-xs text-muted-foreground truncate">
-                        {item.media.title}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="flex gap-1.5">
+                    {list.items.map((item) =>
+                      item.media.posterPath ? (
+                        <div
+                          key={item.media.id}
+                          className="relative aspect-[2/3] w-[38px] shrink-0 overflow-hidden rounded-md bg-muted"
+                        >
+                          <Image
+                            src={`${POSTER_BASE}${item.media.posterPath}`}
+                            alt={`${item.media.title} poster`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          key={item.media.id}
+                          className="flex aspect-[2/3] w-[38px] shrink-0 items-center justify-center rounded-md bg-muted px-0.5"
+                        >
+                          <span className="text-[10px] leading-tight text-muted-foreground text-center line-clamp-3">
+                            {item.media.title}
+                          </span>
+                        </div>
+                      ),
+                    )}
+                  </div>
                 )}
               </a>
             ))}

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { auth } from "@/auth";
 import { userRepository, profileRepository, diaryEntryRepository, listRepository } from "@/lib/repositories";
 import type { ListVisibility } from "@prisma/client";
@@ -7,6 +8,8 @@ import { FeaturedListsEditor } from "./FeaturedListsEditor";
 import { AddMediaButton } from "./AddMediaButton";
 import { NewListButton } from "@/components/new-list-button";
 import { listDisplayName } from "@/lib/labels";
+
+const POSTER_BASE = "https://image.tmdb.org/t/p/w92";
 
 export default async function ProfilePage({
   params,
@@ -163,13 +166,32 @@ export default async function ProfilePage({
                         </span>
                       </div>
                       {list.items.length > 0 && (
-                        <ul className="space-y-0.5">
-                          {list.items.map((item) => (
-                            <li key={item.media.id} className="text-xs text-muted-foreground truncate">
-                              {item.media.title}
-                            </li>
-                          ))}
-                        </ul>
+                        <div className="flex gap-1.5">
+                          {list.items.map((item) =>
+                            item.media.posterPath ? (
+                              <div
+                                key={item.media.id}
+                                className="relative aspect-[2/3] w-[38px] shrink-0 overflow-hidden rounded-md bg-muted"
+                              >
+                                <Image
+                                  src={`${POSTER_BASE}${item.media.posterPath}`}
+                                  alt={`${item.media.title} poster`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div
+                                key={item.media.id}
+                                className="flex aspect-[2/3] w-[38px] shrink-0 items-center justify-center rounded-md bg-muted px-0.5"
+                              >
+                                <span className="text-[10px] leading-tight text-muted-foreground text-center line-clamp-3">
+                                  {item.media.title}
+                                </span>
+                              </div>
+                            ),
+                          )}
+                        </div>
                       )}
                     </Link>
                   ))}
