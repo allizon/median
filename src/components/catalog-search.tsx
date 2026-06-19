@@ -24,6 +24,9 @@ interface CatalogSearchProps {
   results: MediaResult[];
   isAuthenticated: boolean;
   wishlistMediaIds: string[];
+  currentPage: number;
+  totalPages: number;
+  perPage: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -40,6 +43,13 @@ function typeLabel(type: MediaType): string {
   return type;
 }
 
+const PER_PAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: "10", label: "10" },
+  { value: "25", label: "25" },
+  { value: "50", label: "50" },
+  { value: "all", label: "All" },
+];
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function CatalogSearch({
@@ -48,6 +58,9 @@ export function CatalogSearch({
   results,
   isAuthenticated,
   wishlistMediaIds,
+  currentPage,
+  totalPages,
+  perPage,
 }: CatalogSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -59,10 +72,25 @@ export function CatalogSearch({
   const hasResults = results.length > 0;
 
   // Push URL params to trigger server re-render with new results
-  function search(q: string, type: MediaType | "all") {
+  function search(q: string, type: MediaType | "all", page?: number) {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (type && type !== "all") params.set("type", type);
+    if (page && page > 1) params.set("page", String(page));
+    if (perPage && perPage !== "50") params.set("perPage", perPage);
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
+  function goToPage(page: number) {
+    search(initialQuery, initialTypeFilter ?? "all", page);
+  }
+
+  function handlePerPageChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newPerPage = e.target.value;
+    const params = new URLSearchParams();
+    if (inputValue) params.set("q", inputValue);
+    if (initialTypeFilter) params.set("type", initialTypeFilter);
+    if (newPerPage !== "50") params.set("perPage", newPerPage);
     router.push(`${pathname}?${params.toString()}`);
   }
 
@@ -78,6 +106,43 @@ export function CatalogSearch({
   function handleCreated(mediaId: string) {
     router.push(`/media/${mediaId}`);
   }
+
+  const paginationNav = totalPages > 1 && (
+    <nav
+      aria-label="Pagination"
+      className="flex items-center justify-center gap-4"
+    >
+      <Button
+        variant="outline"
+        disabled={currentPage <= 1}
+        onClick={() => goToPage(currentPage - 1)}
+      >
+        Previous
+      </Button>
+      <span className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages}
+      </span>
+      <Button
+        variant="outline"
+        disabled={currentPage >= totalPages}
+        onClick={() => goToPage(currentPage + 1)}
+      >
+        Next
+      </Button>
+      <select
+        aria-label="Results per page"
+        value={perPage}
+        onChange={handlePerPageChange}
+        className="h-8 rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        {PER_PAGE_OPTIONS.map(({ value, label }) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </nav>
+  );
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -126,6 +191,9 @@ export function CatalogSearch({
         })}
       </div>
 
+      {/* Top pagination */}
+      {paginationNav && <div className="mb-4">{paginationNav}</div>}
+
       {/* Results */}
       {hasResults ? (
         <ul className="divide-y divide-border rounded-lg border" role="list">
@@ -171,6 +239,9 @@ export function CatalogSearch({
           )}
         </div>
       )}
+
+      {/* Bottom pagination */}
+      {paginationNav && <div className="mt-6">{paginationNav}</div>}
 
       {/* Add media modal */}
       {isAuthenticated && (
