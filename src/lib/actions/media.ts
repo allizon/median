@@ -4,7 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { MediaType } from "@prisma/client";
+import { MediaType, type Media } from "@prisma/client";
 import { searchTmdb as fetchFromTmdb, fetchTmdbDetails, type TmdbResult } from "@/lib/tmdb";
 
 export type { TmdbResult } from "@/lib/tmdb";
@@ -103,7 +103,7 @@ export async function createMedia(
     }
   }
 
-  let media;
+  let media: Media;
   try {
     media = await prisma.media.create({
       data: {
