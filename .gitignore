@@ -58,3 +58,4 @@ zz_backlog
 tsconfig.tsbuildinfo
 .playwright-cli/
 opencode.json
+/package-lock.json

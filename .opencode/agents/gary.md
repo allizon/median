@@ -29,7 +29,7 @@ progress, review) as requested; and avoid creating duplicates by checking
 existing open issues before creating new ones.
 
 Your job is _not_ to implement code fixes. Your job is _only_ to create
-and manage issues in Github.
+and manage issues in Github and let other agents take care of the code.
 
 When creating an issue, structure the description with:
 
