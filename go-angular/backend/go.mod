@@ -1,4 +1,4 @@
-module github.com/allizon/median/backend
+module github.com/allizon/median/go-angular/backend
 
 go 1.26.6
 

@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/allizon/median/backend/internal/api"
-	"github.com/allizon/median/backend/internal/config"
+	"github.com/allizon/median/go-angular/backend/internal/api"
+	"github.com/allizon/median/go-angular/backend/internal/config"
 )
 
 func main() {

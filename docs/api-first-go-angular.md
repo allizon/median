@@ -17,7 +17,7 @@
 
 | Topic | Decision | Rationale |
 |---|---|---|
-| Repo | Same git repo, new top-level dirs `/backend` + `/web` | Keep `CONTEXT.md`, ADRs, agent conventions in reach |
+| Repo | Same git repo, new top-level dir `/go-angular` | Keep `CONTEXT.md`, ADRs, agent conventions in reach |
 | Scope (v1) | **Vertical slice** end-to-end | Validate every layer cheaply; not full parity |
 | Packaging | **Single Docker image**, split-later path | Same-origin, no CORS; documented as 2 images later |
 | Auth | **Access JWT (in memory) + refresh token in HttpOnly cookie** | Same-origin today, cross-origin/mobile-ready later |
@@ -39,8 +39,9 @@
 
 These were held out of the core grilling as sensible defaults. Flag if any is wrong.
 
-- **Repo layout:** Go module rooted at `/backend`; Angular app at `/web`. Existing Next.js app
-  stays where it is.
+- **Repo layout:** `/go-angular` is the top-level root for this build; the Go module lives at
+  `/go-angular/backend`, the Angular app at `/go-angular/web`. Existing Next.js app stays where
+  it is.
 - **Angular:** modern standalone components (default since v17), **signals** for state, Angular
   `HttpClient` with typed REST calls. No NgRx for the slice.
 - **TMDB:** Go-side `net/http` client using the Bearer token (`TMDB_API_KEY`), never exposed to
@@ -61,7 +62,7 @@ These were held out of the core grilling as sensible defaults. Flag if any is wr
 │                                                              │
 │  ┌────────────────────────────┐   ┌───────────────────────┐  │
 │  │        Angular SPA         │   │      Go binary        │  │
-│  │   (/web, built static)     │   │  chi + sqlc + TMDB    │  │
+│  │   (/go-angular/web)        │   │  chi + sqlc + TMDB    │  │
 │  │                            │   │                       │  │
 │  │  Bearer access JWT in      │──▶│  REST/JSON API        │  │
 │  │  memory; refresh via       │◀──│  under /api/*         │  │
@@ -146,8 +147,9 @@ https://github.com/users/allizon/projects/5 (issues #82–#86).
   (revocable). Decide before building auth.
 - Password hashing: bcrypt (`golang.org/x/crypto/bcrypt`) — assume yes unless challenged.
 - Angular version: latest stable (v20+) with standalone components and signals.
-- Confirm the repo layout directories and whether the Go module root lives at `/backend` or
-  `/backend/cmd/...` (standard: Go module at `/backend`, `cmd/server/main.go`).
+- Confirm the repo layout directories and whether the Go module root lives at
+  `/go-angular/backend` or `/go-angular/backend/cmd/...` (standard: Go module at
+  `/go-angular/backend`, `cmd/server/main.go`).
 - Ground the layout, then scaffold: `go mod init`, sqlc + golang-migrate setup, Angular CLI
-  workspace under `/web`.
+  workspace under `/go-angular/web`.
 - This doc is the handoff point for future agent sessions.
