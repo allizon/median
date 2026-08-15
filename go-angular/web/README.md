@@ -23,7 +23,7 @@ This app uses **npm** (not the repository-wide pnpm).
 ## Prerequisites
 
 - Node.js 22.x (see `.nvmrc` at the repo root), npm.
-- Go 1.22+ for the backend.
+- Go 1.26+ for the backend.
 
 ## Running locally
 
