@@ -1,0 +1,6 @@
+# Go build artifacts
+*.test
+*.out
+
+# Local env
+.env
