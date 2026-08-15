@@ -62,6 +62,15 @@ can fetch `/api/health` same-origin in development (no CORS needed):
 
 The proxy is dev-time only; production builds expect a real `/api` origin.
 
+## PostCSS
+
+`postcss.config.mjs` is deliberately empty. Without it, Vite walks up to the
+repo root and picks up the Next.js app's `postcss.config.mjs` (Tailwind),
+which loads `@tailwindcss/postcss` and emits a Node `DEP0205` deprecation
+warning on every `npm start`. Keeping a config here scopes CSS processing to
+this app. If you later add PostCSS/Tailwind to the Angular app, extend this
+file instead of deleting it.
+
 ## Building
 
 ```sh
