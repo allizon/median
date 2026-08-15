@@ -1,0 +1,12 @@
+<main>
+  <section>
+    <h1>Median · Health</h1>
+    @if (health(); as status) {
+      <p data-testid="health-status">status: {{ status }}</p>
+    } @else if (error(); as message) {
+      <p data-testid="health-error" role="alert">{{ message }}</p>
+    } @else {
+      <p data-testid="health-checking">Checking backend health…</p>
+    }
+  </section>
+</main>
